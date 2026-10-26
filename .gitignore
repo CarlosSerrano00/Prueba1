@@ -41,3 +41,13 @@ example
 # generated native folders
 /ios
 /android
+
+# App
+.env
+.env.local
+*.apk
+*.aab
+
+# Datos locales del servidor de simulacion
+mock-api/db.json
+
