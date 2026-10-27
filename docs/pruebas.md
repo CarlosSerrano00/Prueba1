@@ -13,11 +13,11 @@ npm test
 Resultado de la última ejecución:
 
 ```text
-tests 55
+tests 57
 suites 17
-pass 55
+pass 57
 fail 0
-duration_ms ~732
+duration_ms ~1008
 ```
 
 ### Distribución
@@ -26,10 +26,10 @@ duration_ms ~732
 |---|---:|---|
 | `tests/validators.test.ts` | 15 | R2, R5, R6 (foto), periodo y parsing de lectura |
 | `tests/consumo.test.ts` | 12 | R6: consumo, umbral, anomalía, casos sin datos |
-| `tests/syncEngine.test.ts` | 13 | R4, R6, R9: idempotencia, reintentos, revisión |
+| `tests/syncEngine.test.ts` | 15 | R4, R6, R9, R10: idempotencia, reintentos, revisión y duplicado remoto |
 | `tests/validacionesEntidades.test.ts` | 13 | Fechas, rangos, longitudes, ficha de medidor y reglas de lectura |
 | `tests/contratoRemoto.test.ts` | 2 | Campos exactos de MockAPI |
-| **Total** | **55** | |
+| **Total** | **57** | |
 
 ### `tests/validators.test.ts`
 
@@ -80,6 +80,8 @@ El motor se prueba con dependencias falsas: no usa SQLite, `fetch` ni React.
   - no duplica si el POST se guardó pero la respuesta se perdió;
   - reintenta si falla la red antes de llegar al servidor;
   - recupera un 409 de `localId` duplicado sin marcarlo como error definitivo;
+  - no envía si otra lectura del mismo medidor y periodo ya existe en MockAPI;
+  - marca enviada si la lectura encontrada por periodo tiene el mismo `localId`;
   - mantiene pendiente y reporta error ante un 500;
   - no reenvía una lectura ya marcada como enviada.
 - **R6 · anomalías durante la sincronización**
@@ -161,6 +163,7 @@ Resultado comprobado: 10 medidores y 3 lecturas. El comando se ejecutó dos vece
 | Actualizar ficha | `PUT /medidores/:id` | 200 y datos actualizados |
 | Crear lectura | `POST /lecturas` con los 9 campos | 201 |
 | Consultar por `localId` | `GET /lecturas?localId=...` | recupera la lectura |
+| Consultar por medidor/periodo | `GET /lecturas?codigoMedidor=MED-100008&periodo=2026-10` | 1 lectura semilla; el motor la usa para no duplicar |
 
 La prueba de `PUT` y `POST` usó un medidor temporal `MED-999998` y se borraron ambos registros al terminar. La base quedó en 10 medidores y 3 lecturas.
 

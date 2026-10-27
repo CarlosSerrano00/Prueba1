@@ -74,6 +74,7 @@ function crearEscenario(opciones: OpcionesEscenario = {}) {
   const remotas: LecturaRemota[] = [];
   let posts = 0;
   let busquedasRemotas = 0;
+  let busquedasPeriodo = 0;
   let ultimaEvaluacion: {
     estadoVerificacion: EstadoVerificacion;
     consumoCalculado: number | null;
@@ -110,6 +111,15 @@ function crearEscenario(opciones: OpcionesEscenario = {}) {
     buscarLecturaRemota: async (localId) => {
       busquedasRemotas += 1;
       return remotas.find((item) => item.localId === localId) ?? null;
+    },
+
+    buscarLecturaRemotaPorPeriodo: async (codigoMedidor, periodo) => {
+      busquedasPeriodo += 1;
+      return (
+        remotas.find(
+          (item) => item.codigoMedidor === codigoMedidor && item.periodo === periodo,
+        ) ?? null
+      );
     },
 
     enviarLectura: async (lecturaEnviar) => {
@@ -185,6 +195,9 @@ function crearEscenario(opciones: OpcionesEscenario = {}) {
     },
     get busquedasRemotas() {
       return busquedasRemotas;
+    },
+    get busquedasPeriodo() {
+      return busquedasPeriodo;
     },
     get ultimaEvaluacion() {
       return ultimaEvaluacion;
@@ -262,6 +275,55 @@ describe('R9 - sincronización idempotente', () => {
     assert.equal(segundo.enviadas, 1);
     assert.equal(escenario.remotas.length, 1);
     assert.equal(escenario.lectura.estadoEnvio, 'enviado');
+  });
+
+  it('no envía si ya existe otra lectura del mismo medidor y periodo', async () => {
+    const escenario = crearEscenario();
+    escenario.deps.buscarLecturaRemotaPorPeriodo = async () => ({
+      id: '77',
+      localId: 'lec_otro_tecnico_0000000001',
+      medidorId: '1',
+      codigoMedidor: 'MED-100001',
+      codigoTecnico: 'TEC-002',
+      fechaRegistro: '2026-10-20T12:00:00.000Z',
+      periodo: '2026-10',
+      tipoEstado: 'normal',
+      lecturaActual: 118,
+      estadoVerificacion: 'verificada',
+    });
+
+    const resultado = await ejecutar(escenario);
+
+    assert.equal(resultado.enviadas, 0);
+    assert.equal(resultado.revision, 1);
+    assert.equal(escenario.posts, 0, 'no debe crear un duplicado en MockAPI');
+    assert.equal(escenario.lectura.estadoEnvio, 'requiere_revision');
+    assert.match(escenario.lectura.mensajeError ?? '', /ya existe una lectura/i);
+  });
+
+  it('marca enviada si el registro del periodo es el mismo localId', async () => {
+    const escenario = crearEscenario();
+    escenario.deps.buscarLecturaRemota = async () => null;
+    escenario.deps.buscarLecturaRemotaPorPeriodo = async () => ({
+      id: '78',
+      localId: escenario.lectura.localId,
+      medidorId: '1',
+      codigoMedidor: 'MED-100001',
+      codigoTecnico: 'TEC-001',
+      fechaRegistro: '2026-10-26T12:00:00.000Z',
+      periodo: '2026-10',
+      tipoEstado: 'normal',
+      lecturaActual: 120,
+      estadoVerificacion: 'verificada',
+    });
+
+    const resultado = await ejecutar(escenario);
+
+    assert.equal(resultado.enviadas, 1);
+    assert.equal(resultado.revision, 0);
+    assert.equal(escenario.posts, 0);
+    assert.equal(escenario.lectura.estadoEnvio, 'enviado');
+    assert.equal(escenario.lectura.idRemoto, '78');
   });
 
   it('recupera un 409 de localId duplicado sin marcar error definitivo', async () => {

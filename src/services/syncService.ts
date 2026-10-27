@@ -34,6 +34,19 @@ function medidorDesdeRemoto(codigo: string, medidor: Awaited<ReturnType<typeof c
   };
 }
 
+async function buscarLecturaRemotaConFiltros(
+  filtros: Record<string, string>,
+  coincide: (item: Record<string, unknown>) => boolean,
+): Promise<LecturaRemota | null> {
+  const datos = await solicitar<unknown>(`/lecturas${construirConsulta(filtros)}`);
+  if (datos == null) return null;
+  const lista = Array.isArray(datos) ? datos : [datos];
+  const encontrada = lista.find(
+    (item) => item != null && typeof item === 'object' && coincide(item as Record<string, unknown>),
+  );
+  return encontrada ? parsearLecturaRemota(encontrada) : null;
+}
+
 const dependencias: SyncDependencias = {
   listarPendientes: (codigoTecnico) => listarPendientesEnvio(codigoTecnico),
 
@@ -45,18 +58,13 @@ const dependencias: SyncDependencias = {
 
   reclamarLectura: reclamarLecturaParaEnvio,
 
-  buscarLecturaRemota: async (localId) => {
-    const datos = await solicitar<unknown>(`/lecturas${construirConsulta({ localId })}`);
-    if (datos == null) return null;
-    const lista = Array.isArray(datos) ? datos : [datos];
-    const encontrada = lista.find(
-      (item) =>
-        item != null &&
-        typeof item === 'object' &&
-        (item as Record<string, unknown>).localId === localId,
-    );
-    return encontrada ? parsearLecturaRemota(encontrada) : null;
-  },
+  buscarLecturaRemota: (localId) =>
+    buscarLecturaRemotaConFiltros({ localId }, (item) => item.localId === localId),
+
+  buscarLecturaRemotaPorPeriodo: (codigoMedidor, periodo) =>
+    buscarLecturaRemotaConFiltros({ codigoMedidor, periodo }, (item) => {
+      return item.codigoMedidor === codigoMedidor && item.periodo === periodo;
+    }),
 
   enviarLectura: async (lectura) => {
     const respuesta = await solicitar<unknown>('/lecturas', {

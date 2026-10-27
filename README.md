@@ -19,7 +19,7 @@ Proyecto de la prueba técnica de la **ESFOT · Escuela Politécnica Nacional** 
 ## Estado de la entrega
 
 - Código fuente completo para R1–R10.
-- `npm test`: **55 pruebas, 55 correctas** (17 suites).
+- `npm test`: **57 pruebas, 57 correctas** (17 suites).
 - `npm run typecheck` y `npm run lint`: sin errores.
 - `npx expo-doctor`: **21/21 comprobaciones correctas**.
 - `npx expo export --platform android`: bundle de producción generado correctamente.
@@ -40,7 +40,7 @@ Proyecto de la prueba técnica de la **ESFOT · Escuela Politécnica Nacional** 
 | **R7** Foto obligatoria y persistente | Obligatoria con anomalía o medidor dañado; opcional en los demás casos. Se copia a `Paths.document/fotos-lecturas`. Si se niega el permiso, se explica y se permite continuar cuando la foto no es obligatoria. | `src/services/fotoService.ts`, `src/components/ui/FotoMedidor.tsx` |
 | **R8** Borrador recuperable | Un borrador activo por técnico, guardado con debounce de 400 ms y paso actual. Al reabrir, se ofrece continuar o descartar. | `src/services/borradoresService.ts`, `src/app/borrador.tsx` |
 | **R9** Envío automático e idempotente | Se sincroniza al recuperar conexión, al volver la app al frente y cada 30 s. Antes de enviar se busca el `localId`; solo se marca enviada con respuesta 2xx o con la lectura ya existente. | `src/services/syncEngine.ts`, `src/context/AppProvider.tsx` |
-| **R10** Corrección y duplicados | Pendientes y `requiere_revision` se pueden corregir; enviadas no. Restricción `UNIQUE(codigo_medidor, periodo)` en SQLite y rechazo del servidor. | `src/services/lecturasService.ts`, `src/storage/db.ts` |
+| **R10** Corrección y duplicados | Pendientes y `requiere_revision` se pueden corregir; enviadas no. Restricción `UNIQUE(codigo_medidor, periodo)` en SQLite y comprobación del periodo en el servidor antes de enviar. El mock local además devuelve 409; MockAPI no impone unicidad. | `src/services/lecturasService.ts`, `src/storage/db.ts`, `src/services/syncEngine.ts` |
 
 La trazabilidad completa, con criterios de aceptación y evidencia, está en [`docs/trazabilidad.md`](docs/trazabilidad.md).
 
@@ -141,7 +141,7 @@ npm run android        # abrir en emulador/dispositivo Android
 npm run mock           # sistema de oficina simulado
 npm run mock:reset     # reiniciar datos y arrancar el mock
 npm run seed:mockapi   # sembrar MockAPI de forma idempotente
-npm test               # 55 pruebas de dominio, contrato y sincronización
+npm test               # 57 pruebas de dominio, contrato y sincronización
 npm run typecheck      # TypeScript sin emitir
 npm run lint           # ESLint
 npm run export:android # bundle de producción para Android
@@ -235,5 +235,6 @@ Las dependencias del template que no se usan se retiraron (`expo-device`, `expo-
 - El inicio de sesión usa datos quemados, como permite el enunciado; no hay backend de usuarios.
 - MockAPI solo recibe los campos del seed. La foto, el motivo de inaccesibilidad, la descripción del daño y el consumo calculado quedan en SQLite y **no** se envían al servidor.
 - La sincronización es secuencial y reintenta cada 30 s; no pretende ser un motor de colas de nivel producción.
+- MockAPI no impone unicidad por medidor/periodo. Antes de enviar, la app consulta el periodo y evita el `POST` si ya existe otra lectura; aun así, dos dispositivos podrían pasar la comprobación al mismo tiempo.
 - El APK conserva el permiso de tráfico HTTP para el mock local; MockAPI usa HTTPS. Para producción se puede quitar `plugins/withCleartextTraffic`.
 - El artefacto de EAS caduca; si el enlace ya no sirve, genera un APK nuevo con el comando de esta guía.

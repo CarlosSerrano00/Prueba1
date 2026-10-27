@@ -68,7 +68,7 @@ La app se fija en modo claro (`userInterfaceStyle: "light"`), porque el contrast
 3. Recorrer las pantallas y verificar: misma cabecera, mismos colores de estado, mismo espaciado, botones grandes, textos legibles.
 4. Activar modo avión y comprobar que el indicador cambia de color **y** de texto/icono.
 5. Revisar que los errores de formulario tienen texto, no solo borde rojo.
-6. Verificar que las tarjetas de medidor muestran los siete datos sin amontonarlos.
+6. Verificar que las tarjetas de medidor muestran los datos de la ficha sin amontonarlos.
 
 ## Uso de IA
 

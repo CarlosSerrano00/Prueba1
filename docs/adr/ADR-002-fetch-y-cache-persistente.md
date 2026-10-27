@@ -61,7 +61,7 @@ No se instala Axios ni TanStack Query.
 
 1. Revisar `src/services/apiClient.ts`, `src/services/medidoresService.ts` y `src/services/lecturasService.ts`.
 2. Comprobar que `package.json` no contiene `axios`, `@tanstack/react-query` ni `swr`.
-3. En el dispositivo: consultar un medidor con red, activar modo avión, volver a consultarlo y verificar que aparecen los siete datos con el aviso de datos almacenados y la fecha de la última consulta.
+3. En el dispositivo: consultar un medidor con red, activar modo avión, volver a consultarlo y verificar que aparecen los datos de la ficha con el aviso de datos almacenados y la fecha de la última consulta.
 4. Provocar un 404 (código inexistente) y un error de red, y comprobar que los mensajes son distintos.
 5. Revisar que la tabla `medidores_cache` se actualiza después de una consulta exitosa.
 

@@ -31,7 +31,7 @@ La arquitectura prioriza tres cosas:
                 │                              │
 ┌───────────────▼──────────────┐ ┌─────────────▼───────────────┐
 │ Persistencia · src/storage    │ │ Red · apiClient / fetch      │
-│ SQLite: tablas y repositorios │ │ MockAPI /medidores y /lecturas│
+│ SQLite: tablas y repositorios │ │ MockAPI /medidores, /lecturas │
 └───────────────────────────────┘ └──────────────────────────────┘
 ```
 
@@ -58,7 +58,7 @@ La clave **no** se guarda. Se valida contra `src/constants/tecnicos.ts` al inici
 
 ### `medidores_cache`
 
-Copia persistente de los siete datos de R3:
+Copia persistente de los datos de la ficha de R3:
 
 | Campo | Dato de la oficina |
 |---|---|
@@ -228,20 +228,24 @@ para cada lectura:
   si requiere revisión → requiere_revision, continuar
   buscarLecturaRemota(localId)
     ├─ ya existe → marcar enviada (idempotencia)
-    └─ no existe → POST /lecturas
-          ├─ 2xx → marcar enviada con id remoto
-          ├─ 409 por localId → buscar de nuevo; si existe, marcar enviada
-          ├─ 409 por medidor/periodo → requiere_revision
-          ├─ red o 5xx → volver a pendiente, detener si fue red
-          └─ otro 4xx → requiere_revision
+    └─ no existe → buscarLecturaRemotaPorPeriodo(codigo, periodo)
+          ├─ existe con otro localId → requiere_revision
+          ├─ existe con el mismo localId → marcar enviada
+          └─ no existe → POST /lecturas
+                ├─ 2xx → marcar enviada con id remoto
+                ├─ 409 por localId → buscar de nuevo; si existe, marcar enviada
+                ├─ 409 por medidor/periodo → requiere_revision (mock local)
+                ├─ red o 5xx → volver a pendiente, detener si fue red
+                └─ otro 4xx → requiere_revision
 ```
 
 Puntos importantes:
 
 - **Antes de enviar se busca el `localId`.** Si el POST llegó al servidor pero la respuesta se perdió, el siguiente intento encuentra la lectura y no la duplica.
+- **MockAPI no impone unicidad por medidor/periodo.** Por eso, si no aparece el `localId`, se consulta `GET /lecturas?codigoMedidor=...&periodo=...` y se evita el `POST` cuando ya hay otra lectura de ese mes.
 - **El cuerpo del POST usa solo los nueve campos del seed** (`cuerpoLecturaRemota`), no el modelo local completo. Lo mismo aplica al `PUT` del medidor.
 - **Un 409 por `localId` no es un error definitivo**: significa que el envío anterior sí se registró.
-- **Un 409 por medidor/periodo sí es revisión**: alguien más registró ese medidor en el mes, o la lectura local choca con una ya existente.
+- **Un 409 por medidor/periodo también es revisión**: el mock local lo devuelve; MockAPI no lo garantiza, por eso la comprobación previa es obligatoria.
 - El motor es secuencial. Si se corta la red, se detiene y deja el resto pendiente para el próximo ciclo.
 
 ### 5.6 Corrección y duplicados (R10)
@@ -251,6 +255,7 @@ Puntos importantes:
 - Al corregir, la lectura vuelve a `pendiente`, se reinician intentos y error.
 - Antes de insertar se busca `(codigo_medidor, periodo)`. Si existe, se lanza `LecturaDuplicadaError` con la lectura existente para que la interfaz ofrezca verla o corregirla.
 - Si la comprobación previa falla por una carrera, SQLite lanza `UNIQUE constraint failed`; el servicio lo traduce al mismo error de dominio.
+- Al sincronizar se comprueba el periodo en el servidor; un duplicado remoto se marca `requiere_revision` en vez de enviarse. MockAPI no ofrece una garantía atómica: dos dispositivos podrían pasar la comprobación a la vez.
 
 ### 5.7 Edición de la ficha del medidor
 

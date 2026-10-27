@@ -15,6 +15,10 @@ export interface SyncDependencias {
   guardarMedidor(medidor: Medidor): Promise<void>;
   reclamarLectura(localId: string): Promise<boolean>;
   buscarLecturaRemota(localId: string): Promise<LecturaRemota | null>;
+  buscarLecturaRemotaPorPeriodo(
+    codigoMedidor: string,
+    periodo: string,
+  ): Promise<LecturaRemota | null>;
   enviarLectura(lectura: Lectura): Promise<LecturaRemota>;
   actualizarEvaluacion(
     localId: string,
@@ -209,6 +213,29 @@ export async function sincronizarPendientes(
       if (existente) {
         await deps.marcarEnviada(lectura.localId, existente.id, deps.ahora());
         resultado.enviadas += 1;
+        continue;
+      }
+
+      // MockAPI no impone unicidad por medidor/periodo. Antes de enviar se
+      // consulta el periodo para no crear un duplicado que el servidor
+      // aceptaría sin protestar. Si el registro encontrado es este mismo
+      // envío, se marca como enviado; si es de otro dispositivo, se revisa.
+      const delPeriodo = await deps.buscarLecturaRemotaPorPeriodo(
+        lectura.codigoMedidor,
+        lectura.periodo,
+      );
+      if (delPeriodo) {
+        if (delPeriodo.localId === lectura.localId) {
+          await deps.marcarEnviada(lectura.localId, delPeriodo.id, deps.ahora());
+          resultado.enviadas += 1;
+        } else {
+          await deps.marcarRequiereRevision(
+            lectura.localId,
+            `Ya existe una lectura de ${lectura.codigoMedidor} para ${lectura.periodo} en el sistema de oficina. No se envió para evitar un duplicado.`,
+            preparada.lectura.estadoVerificacion,
+          );
+          resultado.revision += 1;
+        }
         continue;
       }
 

@@ -20,8 +20,8 @@ Mapa entre cada requisito de la prueba, su criterio de aceptación, el código q
 | R6 | 1 | `consumo.ts`, `verificacion.ts`, paso 2 | `consumo.test.ts` | ✅ |
 | R7 | 2 | `fotoService.ts`, `FotoMedidor.tsx`, validadores | `validators.test.ts` (foto) | 🧪 |
 | R8 | 2 | `borradoresService.ts`, `borrador.tsx`, registro | Recorrido manual | 🧪 |
-| R9 | 2 | `syncEngine.ts`, `AppProvider.tsx`, `ConnectionStrip.tsx` | `syncEngine.test.ts` (6 casos) | ✅ |
-| R10 | 2 | `lecturasService.ts`, `UNIQUE` en `db.ts`, detalle de lectura | `validators` + mock + revisión de código | ✅/🧪 |
+| R9 | 2 | `syncEngine.ts`, `AppProvider.tsx`, `ConnectionStrip.tsx` | `syncEngine.test.ts` (15 casos) | ✅ |
+| R10 | 2 | `lecturasService.ts`, `syncEngine.ts`, `UNIQUE` en `db.ts`, detalle de lectura | `syncEngine.test.ts` + mock + revisión de código | ✅/🧪 |
 
 ---
 
@@ -261,12 +261,15 @@ Mapa entre cada requisito de la prueba, su criterio de aceptación, el código q
 - `src/app/lectura/[localId].tsx`: acciones de corregir/reintentar según estado.
 - `src/app/medidor/[codigo].tsx`: si ya existe lectura del periodo, muestra un aviso con “Ver lectura” y, si es editable, “Corregir”.
 - `src/utils/verificacion.ts`: `lecturaSePuedeCorregir()` solo para `pendiente` y `requiere_revision`.
+- `src/services/syncEngine.ts`: antes del `POST` busca `localId` y luego `codigoMedidor` + `periodo`; si hay otra lectura, deja `requiere_revision`.
 
 **Evidencia**
 
+- `tests/syncEngine.test.ts`: 15 casos, incluidos el duplicado remoto por periodo y el mismo `localId`.
 - El mock devuelve `409 DUPLICADO_PERIODO` y se probó con `curl`.
+- MockAPI no impone unicidad: se verificó `GET /lecturas?codigoMedidor=MED-100008&periodo=2026-10` y el motor evita el `POST`.
 - La base local rechaza el segundo `INSERT` aunque la comprobación previa se saltara.
-- Las lecturas enviadas se muestran con badge “Enviada” y sin botón de edición.
+- Las lecturas enviadas se muestran con badge "Enviada" y sin botón de edición.
 
 **Pendiente:** recorrido visual de corregir una pendiente y comprobar que una enviada no muestra el botón.
 
@@ -303,7 +306,7 @@ No implementado. La app guarda la foto en el teléfono. El contrato de MockAPI d
 | Borrador | Empezar registro, matar app, reabrir |
 | Sin señal | Modo avión, registrar, ver “Pendiente” |
 | Envío automático | Quitar modo avión y ver el contador bajar |
-| Registro duplicado | Registrar dos veces el mismo medidor en el mismo mes; la segunda vez debe avisar. `MED-100008` demuestra además el 409 del servidor al sincronizar. |
+| Registro duplicado | Registrar dos veces el mismo medidor en el mismo mes; la segunda vez debe avisar. `MED-100008` demuestra además la comprobación remota por periodo al sincronizar. |
 | Corrección | Abrir una pendiente, corregir; abrir una enviada y ver que no se puede |
 | Fecha y periodo | En el paso 1, abrir el calendario, elegir el mes anterior y ver el periodo del resumen |
 | Edición de medidor | Abrir `MED-100001`, Editar, cambiar dirección/fecha y guardar con conexión |

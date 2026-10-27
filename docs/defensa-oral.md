@@ -77,7 +77,7 @@
 
 **Decir:**
 
-> “El envío se dispara al recuperar la conexión, al volver la app al frente y cada 30 segundos si hay pendientes. Antes de enviar, la app busca su `localId` en la oficina. Si el POST anterior llegó pero la respuesta se perdió, lo encuentra y no duplica. Solo marca enviada con una respuesta 2xx o con la lectura ya existente. Si hay un 409 por medidor y periodo, no es un error de red: pasa a revisión.”
+> “El envío se dispara al recuperar la conexión, al volver la app al frente y cada 30 segundos si hay pendientes. Antes de enviar, la app busca su `localId` en la oficina. Si el POST anterior llegó pero la respuesta se perdió, lo encuentra y no duplica. Si no aparece, busca por medidor y periodo: MockAPI no impone unicidad, así que esa consulta evita crear un duplicado mensual. Solo marca enviada con una respuesta 2xx o con la lectura ya existente. Si el mock local devuelve 409 por medidor y periodo, no es un error de red: pasa a revisión.”
 
 **Código para abrir:** `src/services/syncEngine.ts` (buscar `buscarLecturaRemota` y `marcarEnviada`).
 
@@ -95,13 +95,13 @@
 
 > “La regla de una lectura por medidor y mes está en tres capas: la pantalla avisa, el servicio consulta antes de insertar y SQLite tiene una restricción UNIQUE. La base es la última defensa. Una lectura enviada es inmutable: no se puede corregir ni desde la pantalla ni desde el servicio.”
 
-**Si queda tiempo:** guardar `MED-100008`, que ya tiene una lectura de octubre en MockAPI, y sincronizar. El servidor responde 409 y la lectura pasa a “requiere revisión”. Eso demuestra que la oficina también rechaza el duplicado aunque el teléfono no lo conociera.
+**Si queda tiempo:** guardar `MED-100008`, que ya tiene una lectura de octubre en MockAPI, y sincronizar. La consulta por medidor/periodo encuentra la lectura semilla y la deja en “requiere revisión” sin hacer el `POST`. Eso demuestra que la app evita el duplicado aunque MockAPI no imponga unicidad.
 
 **Cierre visual:** abrir la ficha de `MED-100001` → **Editar**, cambiar la fecha con el calendario y guardar. Recorrer login, tab bar flotante, tarjetas y alertas para mostrar el Claymorphism.
 
 **Cerrar:**
 
-> “Lo que no está terminado es la prueba en dispositivo: el APK se compiló en EAS, pero en mi entorno no había emulador para instalarlo y recorrerlo. Preferí no afirmar que estaba probado. La lógica de dominio, fechas, contrato remoto y sincronización sí está cubierta con 55 pruebas automatizadas.”
+> “Lo que no está terminado es la prueba en dispositivo: el APK se compiló en EAS, pero en mi entorno no había emulador para instalarlo y recorrerlo. Preferí no afirmar que estaba probado. La lógica de dominio, fechas, contrato remoto y sincronización sí está cubierta con 57 pruebas automatizadas.”
 
 ---
 
@@ -117,11 +117,11 @@ La caché de TanStack vive en memoria y está pensada para estado remoto. R3 exi
 
 ### 3. ¿Cómo evitas duplicados si se corta la red?
 
-Cada lectura nace con un `localId` generado en el teléfono. Antes de cada POST se consulta `GET /lecturas?localId=...`. Si ya existe, se marca enviada sin volver a crearla. Si el POST responde 409 por `localId`, también se busca y se marca enviada. El `localId` es la clave de idempotencia.
+Cada lectura nace con un `localId` generado en el teléfono. Antes de cada POST se consulta `GET /lecturas?localId=...`. Si ya existe, se marca enviada sin volver a crearla. Si el POST responde 409 por `localId`, también se busca y se marca enviada. El `localId` es la clave de idempotencia. Además, antes del POST se consulta por `codigoMedidor` y `periodo`; si otra lectura ya ocupa ese mes, no se envía.
 
-### 4. ¿Qué pasa si el servidor devuelve 409 por medidor y periodo?
+### 4. ¿Qué pasa si ya hay una lectura del mismo medidor y periodo?
 
-No es un duplicado de envío: es un conflicto de negocio. La lectura pasa a `requiere_revision`, se muestra el motivo y el técnico decide corregir o registrar una incidencia. No se reintenta en bucle.
+No es un duplicado de envío: es un conflicto de negocio. El mock local puede devolver 409; MockAPI no lo hace, por eso el motor consulta el periodo antes del `POST`. En ambos casos la lectura pasa a `requiere_revision`, se muestra el motivo y el técnico decide corregir o registrar una incidencia. No se reintenta en bucle.
 
 ### 5. ¿Por qué la foto se copia y no se guarda solo la URI?
 

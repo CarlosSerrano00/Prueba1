@@ -38,8 +38,9 @@ periodo = `${año}-${mes.padStart(2, '0')}`;
 Se guarda en la lectura y no se recalcula. La restricción principal es `UNIQUE (codigo_medidor, periodo)` en SQLite. Además:
 
 - antes de abrir el formulario se consulta si ya existe una lectura local para ese medidor y periodo (excluyendo la lectura que se está editando);
-- si hay conexión, se consulta el sistema de oficina por `codigoMedidor` y `periodo`; si existe un registro con otro `localId`, se rechaza la captura;
-- si no hay conexión, solo se puede comprobar localmente; el servicio vuelve a comprobar antes de enviar y el servidor devuelve 409 si detecta el duplicado;
+- antes de enviar, el motor pregunta primero por `localId` y luego por `codigoMedidor` + `periodo`; si encuentra una lectura de otro dispositivo, la deja en `requiere_revision` y no hace el `POST`;
+- MockAPI no impone una restricción única por medidor/periodo, así que la comprobación remota previa es la defensa principal; el mock local además responde 409;
+- si no hay conexión, solo se puede comprobar localmente; la comprobación remota se hace al sincronizar, cuando vuelve la red;
 - la edición de una lectura pendiente conserva su periodo original;
 - una lectura actual menor que la última lectura conocida se rechaza con un mensaje que explica la regla. No se implementa un caso de reemplazo de medidor; si ocurre en campo, el técnico debe registrarlo como incidencia y coordinarlo con la oficina.
 
@@ -47,7 +48,7 @@ Se guarda en la lectura y no se recalcula. La restricción principal es `UNIQUE 
 
 - Se gana una regla simple, visible y defendible.
 - Se acepta la limitación de zona horaria en el cambio de mes; se documenta.
-- Se acepta que sin conexión no se puede comprobar un duplicado creado por otro dispositivo. La validación remota y la restricción del servidor local reducen el riesgo, pero MockAPI no ofrece una garantía atómica.
+- Se acepta que sin conexión no se puede comprobar un duplicado creado por otro dispositivo. La comprobación remota antes del envío y el `UNIQUE` local reducen el riesgo; MockAPI no ofrece una garantía atómica, por lo que dos dispositivos podrían pasar la comprobación a la vez.
 - La regla de lectura menor puede impedir registrar un medidor reemplazado. Se prefiere rechazar y explicar antes que aceptar un consumo negativo sin justificación.
 
 ## Verificación
@@ -57,7 +58,8 @@ Se guarda en la lectura y no se recalcula. La restricción principal es `UNIQUE 
 3. Crear una lectura para `MED-100001` en el mes actual e intentar crear otra igual; debe rechazarse aun reiniciando la app.
 4. Editar la lectura pendiente y comprobar que conserva el periodo y no crea una fila nueva.
 5. Con el servidor local, intentar un `POST` con el mismo medidor y periodo; debe devolver 409.
-6. Revisar que una lectura enviada no se puede editar ni eliminar desde la interfaz ni desde el repositorio.
+6. Contra MockAPI, consultar `GET /lecturas?codigoMedidor=MED-100008&periodo=2026-10` y confirmar que el motor la detecta antes del `POST`.
+7. Revisar que una lectura enviada no se puede editar ni eliminar desde la interfaz ni desde el repositorio.
 
 ## Uso de IA
 
