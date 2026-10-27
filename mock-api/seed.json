@@ -1,0 +1,152 @@
+{
+  "medidores": [
+    {
+      "id": "1",
+      "codigo": "MED-100001",
+      "direccion": "Av. Occidental 1234, barrio La Libertad",
+      "sector": "Nono",
+      "numeroCuenta": "CTA-100001",
+      "estado": "activo",
+      "ultimaLectura": 100,
+      "fechaUltimaLectura": "2026-09-20",
+      "consumoPromedioMensual": 20
+    },
+    {
+      "id": "2",
+      "codigo": "MED-100002",
+      "direccion": "Calle Los Nogales 45, junto a la escuela",
+      "sector": "Nono",
+      "numeroCuenta": "CTA-100002",
+      "estado": "activo",
+      "ultimaLectura": 540.5,
+      "fechaUltimaLectura": "2026-09-18",
+      "consumoPromedioMensual": 18
+    },
+    {
+      "id": "3",
+      "codigo": "MED-100003",
+      "direccion": "Sendero El Mirador, lote 12",
+      "sector": "Lloa",
+      "numeroCuenta": "CTA-100003",
+      "estado": "activo",
+      "ultimaLectura": 210,
+      "fechaUltimaLectura": "2026-09-22",
+      "consumoPromedioMensual": 12
+    },
+    {
+      "id": "4",
+      "codigo": "MED-100004",
+      "direccion": "Av. Simón Bolívar km 7, entrada Lloa",
+      "sector": "Lloa",
+      "numeroCuenta": "CTA-100004",
+      "estado": "activo",
+      "ultimaLectura": 875,
+      "fechaUltimaLectura": "2026-09-15",
+      "consumoPromedioMensual": 25
+    },
+    {
+      "id": "5",
+      "codigo": "MED-100005",
+      "direccion": "Calle Quito 812, sector La Dolorosa",
+      "sector": "Nono",
+      "numeroCuenta": "CTA-100005",
+      "estado": "activo",
+      "ultimaLectura": 38.25,
+      "fechaUltimaLectura": "2026-09-19",
+      "consumoPromedioMensual": 8
+    },
+    {
+      "id": "6",
+      "codigo": "MED-100006",
+      "direccion": "Pasaje Los Álamos 3, condominio El Verde",
+      "sector": "Lloa",
+      "numeroCuenta": "CTA-100006",
+      "estado": "activo",
+      "ultimaLectura": 1240,
+      "fechaUltimaLectura": "2026-09-21",
+      "consumoPromedioMensual": 30
+    },
+    {
+      "id": "7",
+      "codigo": "MED-100007",
+      "direccion": "Vía a Chiriboga km 4, parcela 8",
+      "sector": "Lloa",
+      "numeroCuenta": "CTA-100007",
+      "estado": "suspendido",
+      "ultimaLectura": 95,
+      "fechaUltimaLectura": "2026-08-30",
+      "consumoPromedioMensual": 10
+    },
+    {
+      "id": "8",
+      "codigo": "MED-100008",
+      "direccion": "Calle García Moreno 221, casa esquinera",
+      "sector": "Nono",
+      "numeroCuenta": "CTA-100008",
+      "estado": "activo",
+      "ultimaLectura": 200,
+      "fechaUltimaLectura": "2026-09-25",
+      "consumoPromedioMensual": 20
+    },
+    {
+      "id": "9",
+      "codigo": "MED-100009",
+      "direccion": "Barrio San José, lote 27",
+      "sector": "Nono",
+      "numeroCuenta": "CTA-100009",
+      "estado": "activo",
+      "ultimaLectura": 320,
+      "fechaUltimaLectura": "2026-09-17",
+      "consumoPromedioMensual": null
+    },
+    {
+      "id": "10",
+      "codigo": "MED-100010",
+      "direccion": "Calle Nueva 10, ingreso por el parque",
+      "sector": "Nono",
+      "numeroCuenta": "CTA-100010",
+      "estado": "activo",
+      "ultimaLectura": null,
+      "fechaUltimaLectura": null,
+      "consumoPromedioMensual": 15
+    }
+  ],
+  "lecturas": [
+    {
+      "id": "1",
+      "localId": "seed_lec_100002_202609",
+      "medidorId": "2",
+      "codigoMedidor": "MED-100002",
+      "codigoTecnico": "TEC-002",
+      "fechaRegistro": "2026-09-18T15:20:00.000Z",
+      "periodo": "2026-09",
+      "tipoEstado": "normal",
+      "lecturaActual": 540.5,
+      "estadoVerificacion": "verificada"
+    },
+    {
+      "id": "2",
+      "localId": "seed_lec_100008_202610",
+      "medidorId": "8",
+      "codigoMedidor": "MED-100008",
+      "codigoTecnico": "TEC-001",
+      "fechaRegistro": "2026-10-05T14:05:00.000Z",
+      "periodo": "2026-10",
+      "tipoEstado": "normal",
+      "lecturaActual": 250,
+      "estadoVerificacion": "verificada"
+    },
+    {
+      "id": "3",
+      "localId": "seed_lec_100007_202609",
+      "medidorId": "7",
+      "codigoMedidor": "MED-100007",
+      "codigoTecnico": "TEC-002",
+      "fechaRegistro": "2026-09-12T13:40:00.000Z",
+      "periodo": "2026-09",
+      "tipoEstado": "inaccesible",
+      "lecturaActual": null,
+      "estadoVerificacion": "no_aplica"
+    }
+  ]
+}
