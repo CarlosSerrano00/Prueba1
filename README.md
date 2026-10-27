@@ -128,12 +128,12 @@ El perfil `production` genera también APK (no AAB) y autoincrementa `versionCod
 ### APK de demostración
 
 - **Estado del build:** `FINISHED` (compilación correcta en EAS).
-- **Build de EAS:** <https://expo.dev/accounts/carlosserrano00/projects/aquaruta-lecturas/builds/2e28ec41-d644-4582-84cc-13d0c9cda2c4>
-- **Descarga directa del APK:** <https://expo.dev/artifacts/eas/spqEhk7tR4n-kYjI924xlwUkh8mZUTeuoH9sth73Tic.apk>
+- **Build de EAS:** <https://expo.dev/accounts/carlosserrano00/projects/aquaruta-lecturas/builds/f02b8285-fbca-48dd-b9b2-b4a8dfce2b36>
+- **Descarga directa del APK:** <https://expo.dev/artifacts/eas/kzwO0FZN7iyBG80hf7mtiKp5Obkvec_xiZd7NBgzSBQ.apk>
 - **Copia local (no versionada):** `dist/AquaRuta-1.0.0.apk`
-- **Tamaño:** 112.947.026 bytes (107,7 MiB).
-- **SHA-256:** `EA156A9E0F5848D73B1F2CE11E685FEDF4ED7EF151A0F681DF7A38EAE6666EE5`
-- **Commit compilado:** `5cc235f` (`chore: elimina el script de reinicio de la plantilla`). Respecto de `HEAD` solo cambian el texto de `ConnectionStrip` y la documentación; el código funcional es el mismo.
+- **Tamaño:** 112.947.078 bytes (107,7 MiB).
+- **SHA-256:** `945AA528EB689D8A071823735D64A1E87C73FCD0718221DEBA534195B5D98426`
+- **Commit compilado:** `40dba43` (el mismo código de aplicación que `HEAD`; los cambios posteriores solo afectan a esta documentación).
 - **Expiración del artefacto según EAS:** 10/11/2026. Después de esa fecha usa la página del build o genera uno nuevo con el comando de arriba.
 
 El APK **no se instaló ni se recorrió en un dispositivo en este entorno**. La descarga se verificó como un ZIP/APK válido (manifiesto, `classes*.dex`, `resources.arsc` y librerías nativas para varias ABI), pero la instalación, los permisos reales de cámara y el recorrido manual quedan documentados como pendientes en [`docs/pruebas.md`](docs/pruebas.md).
