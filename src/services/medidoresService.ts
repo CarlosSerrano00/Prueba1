@@ -1,6 +1,13 @@
 import type { Medidor, MedidorConOrigen, MedidorRemoto } from '../types/models';
 import { guardarMedidor, listarMedidoresRecientes, obtenerMedidor } from '../storage/medidoresRepository';
 import { formatearFechaHora } from '../utils/format';
+import {
+  validarMedidorFormulario,
+  primerErrorMedidor,
+  type EstadoMedidor,
+  type MedidorFormulario,
+} from '../utils/validacionesEntidades';
+import { cuerpoMedidorRemoto } from '../utils/contratoRemoto';
 import { validarCodigoMedidor } from '../utils/validators';
 import { construirConsulta, solicitar } from './apiClient';
 import { parsearLista, parsearMedidorRemoto } from './apiParsers';
@@ -124,6 +131,82 @@ export async function consultarMedidor(
     }
     throw error;
   }
+}
+
+export interface CambiosMedidor {
+  direccion: string;
+  sector: string;
+  numeroCuenta: string;
+  estado: EstadoMedidor;
+  ultimaLectura: number | null;
+  fechaUltimaLectura: string | null;
+  consumoPromedioMensual: number | null;
+}
+
+/**
+ * Actualiza la ficha del medidor en MockAPI y refresca la copia local. La
+ * operación exige conexión: no se encola porque una ficha maestra no debe
+ * quedar desincronizada sin que el técnico lo sepa.
+ */
+export async function actualizarMedidor(
+  codigo: string,
+  cambios: CambiosMedidor,
+): Promise<Medidor> {
+  const validacionCodigo = validarCodigoMedidor(codigo);
+  if (!validacionCodigo.valido) {
+    throw new ReglaNegocioError(
+      'CODIGO_INVALIDO',
+      validacionCodigo.mensaje ?? 'El código del medidor no es válido.',
+    );
+  }
+
+  const formulario: MedidorFormulario = {
+    codigo,
+    direccion: cambios.direccion,
+    sector: cambios.sector,
+    numeroCuenta: cambios.numeroCuenta,
+    estado: cambios.estado,
+    ultimaLectura: cambios.ultimaLectura == null ? '' : String(cambios.ultimaLectura),
+    fechaUltimaLectura: cambios.fechaUltimaLectura,
+    consumoPromedioMensual:
+      cambios.consumoPromedioMensual == null ? '' : String(cambios.consumoPromedioMensual),
+  };
+  const validacion = validarMedidorFormulario(formulario);
+  if (!validacion.valido) {
+    throw new ReglaNegocioError(
+      'VALIDACION',
+      primerErrorMedidor(validacion.errores) ?? 'Revisa los datos del medidor.',
+      validacion.errores,
+    );
+  }
+
+  const cache = await obtenerMedidor(codigo);
+  const idRemoto = cache?.idRemoto ?? (await consultarMedidorRemoto(codigo))?.id ?? null;
+  if (!idRemoto) {
+    throw new ReglaNegocioError(
+      'MEDIDOR_NO_DISPONIBLE',
+      'No se encontró el identificador remoto del medidor. Conéctate y vuelve a consultarlo.',
+    );
+  }
+
+  const respuesta = await solicitar<unknown>(`/medidores/${encodeURIComponent(idRemoto)}`, {
+    metodo: 'PUT',
+    cuerpo: cuerpoMedidorRemoto({
+      codigo,
+      direccion: validacion.valores.direccion,
+      sector: validacion.valores.sector,
+      numeroCuenta: validacion.valores.numeroCuenta,
+      estado: validacion.valores.estado,
+      ultimaLectura: validacion.valores.ultimaLectura,
+      fechaUltimaLectura: validacion.valores.fechaUltimaLectura,
+      consumoPromedioMensual: validacion.valores.consumoPromedioMensual,
+    }),
+  });
+
+  const remoto = parsearMedidorRemoto(respuesta);
+  const medidor = convertirMedidor(remoto);
+  await guardarMedidor(medidor);
+  return medidor;
 }
 
 export async function consultarMedidorRemoto(codigo: string): Promise<MedidorRemoto | null> {

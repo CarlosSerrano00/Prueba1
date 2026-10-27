@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
-import { colors, radius, spacing } from '../../constants/ui';
+import { clayBorder, clayShadowSoft, colors, radius, spacing } from '../../constants/ui';
 import { Badge } from './Badge';
 import { Texto } from './Texto';
 
@@ -137,11 +137,10 @@ const estilos = StyleSheet.create({
   },
   marcoFoto: {
     height: 230,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     overflow: 'hidden',
     backgroundColor: colors.surfaceAlt,
-    borderWidth: 1,
-    borderColor: colors.border,
+    ...clayBorder,
   },
   foto: {
     width: '100%',
@@ -178,8 +177,8 @@ const estilos = StyleSheet.create({
     justifyContent: 'center',
   },
   marcoVacio: {
-    minHeight: 178,
-    borderRadius: radius.md,
+    minHeight: 188,
+    borderRadius: radius.lg,
     borderWidth: 1.5,
     borderStyle: 'dashed',
     borderColor: colors.borderStrong,
@@ -188,19 +187,23 @@ const estilos = StyleSheet.create({
     justifyContent: 'center',
     padding: spacing.lg,
     gap: 5,
+    ...clayShadowSoft,
   },
   marcoPresionado: {
     backgroundColor: colors.accentSoft,
     borderColor: colors.accent,
   },
   camaraCirculo: {
-    width: 60,
-    height: 60,
+    width: 68,
+    height: 68,
     borderRadius: radius.pill,
     backgroundColor: colors.surface,
+    borderWidth: 1.5,
+    borderColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.xs,
+    ...clayShadowSoft,
   },
   error: {
     flexDirection: 'row',

@@ -8,7 +8,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { colors, minTouch, radius, spacing } from '../../constants/ui';
+import { clayBorder, clayShadowSoft, colors, minTouch, radius, spacing } from '../../constants/ui';
 import { Texto } from './Texto';
 
 type Icono = keyof typeof Ionicons.glyphMap;
@@ -46,7 +46,7 @@ const paletas: Record<
   },
   secundario: {
     fondo: colors.surface,
-    borde: colors.borderStrong,
+    borde: colors.white,
     texto: colors.brand,
     ripple: colors.surfaceAlt,
   },
@@ -97,15 +97,18 @@ export function Boton({
       android_ripple={{ color: paleta.ripple }}
       style={({ pressed }) => [
         estilos.base,
+        variante === 'fantasma' && estilos.fantasma,
         {
           backgroundColor: inactivo ? colors.disabled : paleta.fondo,
           borderColor: inactivo ? colors.disabled : paleta.borde,
-          opacity: pressed && !inactivo ? 0.86 : 1,
+          opacity: pressed && !inactivo ? 0.9 : 1,
+          transform: [{ scale: pressed && !inactivo ? 0.97 : 1 }],
         },
         anchoCompleto ? estilos.completo : estilos.ajustado,
         estilo,
       ]}
     >
+      <View pointerEvents="none" style={estilos.brillo} />
       <View style={estilos.contenido}>
         {cargando ? (
           <ActivityIndicator
@@ -133,11 +136,26 @@ export function Boton({
 const estilos = StyleSheet.create({
   base: {
     minHeight: minTouch,
-    borderRadius: radius.md,
-    borderWidth: 1,
+    borderRadius: radius.lg,
+    ...clayBorder,
     paddingHorizontal: spacing.lg,
     justifyContent: 'center',
     overflow: 'hidden',
+    ...clayShadowSoft,
+  },
+  fantasma: {
+    borderWidth: 0,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  brillo: {
+    position: 'absolute',
+    top: 2,
+    left: 10,
+    right: 10,
+    height: '38%',
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(255,255,255,0.12)',
   },
   completo: {
     alignSelf: 'stretch',

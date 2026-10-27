@@ -1,3 +1,5 @@
+import { parsearFecha } from './fechas';
+
 const MESES_CORTOS = [
   'ene',
   'feb',
@@ -18,9 +20,7 @@ function dosDigitos(valor: number): string {
 }
 
 function fechaDesdeIso(iso: string): Date | null {
-  const soloFecha = /^\d{4}-\d{2}-\d{2}$/.test(iso);
-  const fecha = new Date(soloFecha ? `${iso}T12:00:00` : iso);
-  return Number.isNaN(fecha.getTime()) ? null : fecha;
+  return parsearFecha(iso);
 }
 
 export function formatearFecha(iso: string | null | undefined): string {

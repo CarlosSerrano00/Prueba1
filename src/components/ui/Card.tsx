@@ -2,7 +2,14 @@ import { Ionicons } from '@expo/vector-icons';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { cardShadow, colors, radius, spacing } from '../../constants/ui';
+import {
+  cardShadow,
+  clayBorder,
+  clayShadowSoft,
+  colors,
+  radius,
+  spacing,
+} from '../../constants/ui';
 import { Texto } from './Texto';
 
 interface CardProps {
@@ -117,14 +124,13 @@ const estilos = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
+    ...clayBorder,
     padding: spacing.lg,
     ...cardShadow,
   },
   presionada: {
-    opacity: 0.9,
-    transform: [{ scale: 0.995 }],
+    opacity: 0.92,
+    transform: [{ scale: 0.985 }],
   },
   deshabilitada: {
     opacity: 0.55,
@@ -141,11 +147,15 @@ const estilos = StyleSheet.create({
   },
   stat: {
     flex: 1,
-    minHeight: 100,
-    borderRadius: radius.md,
+    minHeight: 104,
+    borderRadius: radius.lg,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.85)',
+    borderBottomColor: 'rgba(130,139,183,0.20)',
     padding: spacing.md,
     gap: 2,
     justifyContent: 'center',
+    ...clayShadowSoft,
   },
   statValor: {
     fontSize: 26,
@@ -160,7 +170,7 @@ const estilos = StyleSheet.create({
     alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: spacing.lg,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.sm + 1,
   },
   infoEtiqueta: {
     flexDirection: 'row',

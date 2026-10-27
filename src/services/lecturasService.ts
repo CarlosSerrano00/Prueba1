@@ -8,6 +8,12 @@ import {
   obtenerLecturaPorMedidorPeriodo,
   obtenerResumenLecturas,
 } from '../storage/lecturasRepository';
+import {
+  fechaHoraDesdeDia,
+  fechaLocalISO,
+  hoyISO,
+  periodoDeFecha,
+} from '../utils/fechas';
 import { generarLocalId } from '../utils/id';
 import { obtenerPeriodo } from '../utils/periodo';
 import { primerError, validarRegistroCompleto } from '../utils/validators';
@@ -61,7 +67,9 @@ export async function guardarNuevaLectura(
     );
   }
 
-  const periodo = parametros.periodo ?? obtenerPeriodo();
+  const diaRegistro = datos.fechaRegistro?.trim() || fechaLocalISO();
+  const periodo =
+    periodoDeFecha(diaRegistro) ?? parametros.periodo ?? obtenerPeriodo();
   const existente = await obtenerLecturaPorMedidorPeriodo(medidor.codigo, periodo);
   if (existente) {
     throw new LecturaDuplicadaError(
@@ -71,6 +79,11 @@ export async function guardarNuevaLectura(
   }
 
   const ahora = new Date().toISOString();
+  // El selector solo elige el día. Si es hoy conservamos la hora real de
+  // captura; para fechas pasadas usamos el mediodía local como instante
+  // estable, sin desplazar el día por zona horaria.
+  const fechaRegistro =
+    diaRegistro === hoyISO() ? ahora : (fechaHoraDesdeDia(diaRegistro) ?? ahora);
   const estadoVerificacion = calcularEstadoVerificacion({
     tipoEstado: datos.tipoEstado,
     lecturaActual: validacion.lectura,
@@ -85,7 +98,7 @@ export async function guardarNuevaLectura(
     codigoMedidor: medidor.codigo,
     medidorId: medidor.idRemoto,
     codigoTecnico,
-    fechaRegistro: ahora,
+    fechaRegistro,
     periodo,
     tipoEstado: datos.tipoEstado,
     lecturaActual: validacion.lectura,
@@ -146,7 +159,7 @@ export async function corregirLectura(
     );
   }
 
-  const validacion = validarRegistroCompleto(datos, medidor, fotoUri);
+  const validacion = validarRegistroCompleto(datos, medidor, fotoUri, { validarFecha: false });
   if (!validacion.valido) {
     throw new ReglaNegocioError(
       'VALIDACION',
@@ -166,7 +179,7 @@ export async function corregirLectura(
 
   const actualizada: Lectura = {
     ...lectura,
-    medidorId: medidor.idRemoto,
+    medidorId: medidor.idRemoto ?? lectura.medidorId,
     tipoEstado: datos.tipoEstado,
     lecturaActual: validacion.lectura,
     ultimaLecturaReferencia: medidor.ultimaLectura,

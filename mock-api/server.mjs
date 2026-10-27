@@ -250,7 +250,6 @@ async function manejar(req, res) {
       id: String(siguienteIdLectura()),
       medidorId: cuerpo.medidorId ?? (medidor ? String(medidor.id) : null),
       fechaRegistro: cuerpo.fechaRegistro ?? new Date().toISOString(),
-      creadoEnServidor: new Date().toISOString(),
     };
     datos.lecturas.push(nueva);
     guardarDatos();

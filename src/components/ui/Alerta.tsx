@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { colors, radius, spacing } from '../../constants/ui';
+import { clayShadowSoft, colors, radius, spacing } from '../../constants/ui';
 import { Texto } from './Texto';
 
 type TonoAlerta = 'info' | 'exito' | 'advertencia' | 'peligro' | 'borrador';
@@ -85,9 +85,12 @@ export function Alerta({
 
 const estilos = StyleSheet.create({
   alerta: {
-    borderWidth: 1,
-    borderRadius: radius.md,
+    borderWidth: 1.5,
+    borderTopColor: 'rgba(255,255,255,0.9)',
+    borderLeftColor: 'rgba(255,255,255,0.9)',
+    borderRadius: radius.lg,
     padding: spacing.md,
+    ...clayShadowSoft,
   },
   fila: {
     flexDirection: 'row',

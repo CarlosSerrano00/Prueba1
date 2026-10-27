@@ -81,8 +81,9 @@ export default function BuscarScreen() {
           onChangeText={cambiarCodigo}
           placeholder="MED-123456"
           icono="barcode-outline"
-          autoCapitalize="none"
+          autoCapitalize="characters"
           autoCorrect={false}
+          maxLength={10}
           error={errorCodigo}
           ayuda="Formato exacto: MED- seguido de seis dígitos."
           testID="buscar-codigo"
@@ -154,6 +155,7 @@ export default function BuscarScreen() {
 const estilos = StyleSheet.create({
   buscador: {
     gap: spacing.md,
+    backgroundColor: colors.surfaceBrand,
   },
   notaValidacion: {
     flexDirection: 'row',

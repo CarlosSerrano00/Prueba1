@@ -3,6 +3,7 @@ export { AppHeader } from './AppHeader';
 export { AppScreen } from './AppScreen';
 export { Badge, type TonoBadge } from './Badge';
 export { Boton } from './Boton';
+export { CampoFecha } from './CampoFecha';
 export { CampoTexto } from './CampoTexto';
 export { Card, InfoRow, SectionTitle, StatCard, TarjetaPresionable } from './Card';
 export { ChoiceCard } from './ChoiceCard';

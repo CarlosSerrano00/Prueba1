@@ -5,6 +5,7 @@
   "dependencies": {
     "@expo/ui": "~57.0.26",
     "@expo/vector-icons": "^15.0.2",
+    "@react-native-community/datetimepicker": "9.1.0",
     "expo": "~57.0.31",
     "expo-constants": "~57.0.22",
     "expo-file-system": "~57.0.7",
@@ -45,10 +46,11 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test tests/validators.test.ts tests/consumo.test.ts tests/syncEngine.test.ts",
+    "test": "node --import tsx --test tests/validators.test.ts tests/consumo.test.ts tests/syncEngine.test.ts tests/validacionesEntidades.test.ts tests/contratoRemoto.test.ts",
     "test:watch": "node --import tsx --test --watch tests/",
     "mock": "node mock-api/server.mjs",
     "mock:reset": "node mock-api/server.mjs --reset",
+    "seed:mockapi": "node scripts/seed-mockapi.mjs",
     "export:android": "expo export --platform android"
   },
   "private": true

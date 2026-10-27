@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { colors, radius, spacing } from '../../constants/ui';
+import { clayShadowSoft, colors, radius, spacing } from '../../constants/ui';
 import { Texto } from './Texto';
 
 interface EmptyStateProps {
@@ -42,13 +42,16 @@ const estilos = StyleSheet.create({
     paddingVertical: spacing.lg,
   },
   circulo: {
-    width: 64,
-    height: 64,
+    width: 72,
+    height: 72,
     borderRadius: radius.pill,
     backgroundColor: colors.accentSoft,
+    borderWidth: 1.5,
+    borderColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.xs,
+    ...clayShadowSoft,
   },
   accion: {
     marginTop: spacing.sm,

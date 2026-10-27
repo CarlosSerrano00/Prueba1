@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useApp } from '../../context/AppProvider';
-import { colors, radius, spacing } from '../../constants/ui';
+import { cardShadow, clayBorder, colors, radius, spacing } from '../../constants/ui';
 import { Badge } from './Badge';
 import { Texto } from './Texto';
 
@@ -84,11 +84,14 @@ export function ConnectionStrip() {
 const estilos = StyleSheet.create({
   contenedor: {
     backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    paddingHorizontal: spacing.lg,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.sm,
+    borderRadius: radius.lg,
+    ...clayBorder,
+    paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     gap: 2,
+    ...cardShadow,
   },
   contenedorOffline: {
     backgroundColor: colors.warningSoft,
@@ -129,6 +132,8 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.surfaceBrand,
+    borderWidth: 1,
+    borderColor: colors.white,
   },
   botonSyncInactivo: {
     backgroundColor: 'transparent',

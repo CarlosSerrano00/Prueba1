@@ -392,6 +392,7 @@ const estilos = StyleSheet.create({
   },
   estadoCard: {
     gap: spacing.md,
+    backgroundColor: colors.surfaceBrand,
   },
   estadoFila: {
     flexDirection: 'row',
@@ -421,7 +422,7 @@ const estilos = StyleSheet.create({
   foto: {
     width: '100%',
     height: 230,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     backgroundColor: colors.surfaceAlt,
   },
   sinFoto: {

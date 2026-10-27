@@ -15,7 +15,7 @@ import {
   StatCard,
   Texto,
 } from '@/components/ui';
-import { colors, radius, spacing } from '@/constants/ui';
+import { clayShadowSoft, colors, radius, spacing } from '@/constants/ui';
 import { useApp } from '@/context/AppProvider';
 import { mensajeDeError } from '@/services/errors';
 import { probarConexion } from '@/services/medidoresService';
@@ -93,7 +93,7 @@ export default function PerfilScreen() {
     try {
       const restablecida = await restablecerApi();
       setUrl(restablecida);
-      setMensajeUrl('Se restableció la URL predeterminada del emulador Android.');
+      setMensajeUrl('Se restableció la URL predeterminada de MockAPI.');
     } catch (fallo) {
       setErrorUrl(mensajeDeError(fallo));
     }
@@ -236,14 +236,14 @@ export default function PerfilScreen() {
               setErrorUrl(null);
               setMensajeUrl(null);
             }}
-            placeholder="http://192.168.1.10:4000"
+            placeholder="https://6ae0a4a2be3bc8fead97a3b2.mockapi.io"
             icono="server-outline"
             autoCapitalize="none"
             autoCorrect={false}
             keyboardType="url"
             editable={!urlPorEntorno}
             error={errorUrl}
-            ayuda="En el emulador Android usa http://10.0.2.2:4000. En un teléfono real, la IP de tu computadora."
+            ayuda="Usa la URL raíz del proyecto MockAPI (sin /recursos). La app consulta /medidores y /lecturas."
             testID="perfil-url-api"
           />
 
@@ -325,16 +325,18 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
+    backgroundColor: colors.surfaceBrand,
   },
   avatar: {
-    width: 62,
-    height: 62,
-    borderRadius: 31,
+    width: 66,
+    height: 66,
+    borderRadius: 33,
     backgroundColor: colors.accentSoft,
     borderWidth: 1.5,
-    borderColor: colors.border,
+    borderColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
+    ...clayShadowSoft,
   },
   perfilTextos: {
     flex: 1,

@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { colors, radius, spacing } from '../../constants/ui';
+import { clayBorder, clayShadowSoft, colors, radius, spacing } from '../../constants/ui';
 import { Texto } from './Texto';
 
 interface ChoiceCardProps {
@@ -32,7 +32,14 @@ export function ChoiceCard({
       android_ripple={{ color: fondo }}
       style={({ pressed }) => [
         estilos.tarjeta,
-        seleccionado && { borderColor: color, backgroundColor: fondo },
+        seleccionado && {
+          borderColor: color,
+          borderTopColor: color,
+          borderLeftColor: color,
+          borderBottomColor: color,
+          borderRightColor: color,
+          backgroundColor: fondo,
+        },
         pressed && estilos.presionada,
       ]}
     >
@@ -61,21 +68,24 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    borderWidth: 1.5,
-    borderColor: colors.border,
+    ...clayBorder,
     backgroundColor: colors.surface,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     padding: spacing.md,
+    ...clayShadowSoft,
   },
   presionada: {
-    opacity: 0.88,
+    opacity: 0.9,
+    transform: [{ scale: 0.985 }],
   },
   icono: {
-    width: 42,
-    height: 42,
+    width: 44,
+    height: 44,
     borderRadius: radius.sm,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.55)',
   },
   textos: {
     flex: 1,

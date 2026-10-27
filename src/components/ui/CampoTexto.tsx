@@ -10,7 +10,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { colors, fonts, minTouch, radius, spacing } from '../../constants/ui';
+import { clayInset, colors, fonts, minTouch, radius, spacing } from '../../constants/ui';
 import { Texto } from './Texto';
 
 type Icono = keyof typeof Ionicons.glyphMap;
@@ -31,6 +31,7 @@ interface CampoTextoProps {
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
   autoCorrect?: boolean;
   maxLength?: number;
+  contador?: boolean;
   editable?: boolean;
   onBlur?: () => void;
   onFocus?: () => void;
@@ -55,6 +56,7 @@ export function CampoTexto({
   autoCapitalize = 'sentences',
   autoCorrect = false,
   maxLength,
+  contador = true,
   editable = true,
   onBlur,
   onFocus,
@@ -68,9 +70,16 @@ export function CampoTexto({
 
   return (
     <View style={[estilos.contenedor, estilo]}>
-      <Texto variante="etiqueta" color={colors.textMuted}>
-        {etiqueta}
-      </Texto>
+      <View style={estilos.filaEtiqueta}>
+        <Texto variante="etiqueta" color={colors.textMuted}>
+          {etiqueta}
+        </Texto>
+        {maxLength && contador ? (
+          <Texto variante="micro" color={colors.textSoft}>
+            {valor.length}/{maxLength}
+          </Texto>
+        ) : null}
+      </View>
 
       <View
         style={[
@@ -160,27 +169,43 @@ const estilos = StyleSheet.create({
   contenedor: {
     gap: spacing.sm,
   },
+  filaEtiqueta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+  },
   caja: {
     minHeight: minTouch + 4,
     borderRadius: radius.md,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
+    ...clayInset,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.md,
   },
   cajaEnfocada: {
     borderColor: colors.accent,
-    backgroundColor: colors.white,
+    borderTopColor: colors.accent,
+    borderLeftColor: colors.accent,
+    borderBottomColor: '#5EEAD4',
+    borderRightColor: '#5EEAD4',
+    backgroundColor: '#F5FFFC',
   },
   cajaError: {
     borderColor: colors.danger,
-    backgroundColor: '#FFFCFC',
+    borderTopColor: colors.danger,
+    borderLeftColor: colors.danger,
+    borderBottomColor: '#FDA4AF',
+    borderRightColor: '#FDA4AF',
+    backgroundColor: '#FFF5F7',
   },
   cajaInactiva: {
     backgroundColor: colors.surfaceAlt,
     borderColor: colors.border,
+    borderTopColor: colors.border,
+    borderLeftColor: colors.border,
+    borderBottomColor: colors.surface,
+    borderRightColor: colors.surface,
   },
   cajaMultilinea: {
     alignItems: 'flex-start',

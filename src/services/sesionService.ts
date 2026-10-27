@@ -8,14 +8,24 @@ export async function restaurarSesion(): Promise<Sesion | null> {
 }
 
 export async function iniciarSesion(codigo: string, clave: string): Promise<Sesion> {
-  if (codigo.trim().length === 0) {
+  const codigoLimpio = codigo.trim();
+  if (codigoLimpio.length === 0) {
     throw new ReglaNegocioError('CREDENCIALES', 'Ingresa tu código de empleado.');
+  }
+  if (codigoLimpio.length > 20) {
+    throw new ReglaNegocioError(
+      'CREDENCIALES',
+      'El código de empleado no debe superar los 20 caracteres.',
+    );
   }
   if (clave.length === 0) {
     throw new ReglaNegocioError('CREDENCIALES', 'Ingresa tu clave.');
   }
+  if (clave.length > 60) {
+    throw new ReglaNegocioError('CREDENCIALES', 'La clave no debe superar los 60 caracteres.');
+  }
 
-  const tecnico = buscarTecnico(codigo, clave);
+  const tecnico = buscarTecnico(codigoLimpio, clave);
   if (!tecnico) {
     throw new ReglaNegocioError(
       'CREDENCIALES',

@@ -20,13 +20,13 @@ interface BadgeProps {
 }
 
 const paletas: Record<TonoBadge, { fondo: string; texto: string; borde: string }> = {
-  exito: { fondo: colors.successSoft, texto: colors.success, borde: '#BBF7D0' },
+  exito: { fondo: colors.successSoft, texto: colors.success, borde: '#A7F3D0' },
   advertencia: { fondo: colors.warningSoft, texto: colors.warning, borde: '#FDE68A' },
-  peligro: { fondo: colors.dangerSoft, texto: colors.danger, borde: '#FECACA' },
-  info: { fondo: colors.infoSoft, texto: colors.info, borde: '#BAE6FD' },
+  peligro: { fondo: colors.dangerSoft, texto: colors.danger, borde: '#FDA4AF' },
+  info: { fondo: colors.infoSoft, texto: colors.info, borde: '#BFDBFE' },
   borrador: { fondo: colors.draftSoft, texto: colors.draft, borde: '#DDD6FE' },
-  neutral: { fondo: colors.surfaceAlt, texto: colors.textMuted, borde: colors.border },
-  marca: { fondo: colors.surfaceBrand, texto: colors.brand, borde: '#B9DDE9' },
+  neutral: { fondo: colors.surfaceAlt, texto: colors.textMuted, borde: '#FFFFFF' },
+  marca: { fondo: colors.surfaceBrand, texto: colors.brand, borde: '#FFFFFF' },
 };
 
 export function Badge({ texto, tono = 'neutral', icono }: BadgeProps) {
@@ -48,9 +48,11 @@ const estilos = StyleSheet.create({
     alignSelf: 'flex-start',
     gap: 4,
     borderRadius: radius.pill,
-    borderWidth: 1,
-    paddingHorizontal: spacing.sm,
+    borderWidth: 1.2,
+    paddingHorizontal: spacing.sm + 1,
     paddingVertical: 4,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
   },
   texto: {
     letterSpacing: 0.2,

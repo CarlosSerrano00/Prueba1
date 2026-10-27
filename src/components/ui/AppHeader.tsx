@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { colors, radius, spacing } from '../../constants/ui';
+import { clayBorder, clayShadowSoft, colors, radius, spacing } from '../../constants/ui';
 import { Texto } from './Texto';
 
 interface AppHeaderProps {
@@ -54,27 +54,32 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
     paddingBottom: spacing.sm,
+    paddingTop: spacing.xs,
   },
   botonAtras: {
-    width: 46,
-    height: 46,
+    width: 48,
+    height: 48,
     borderRadius: radius.md,
     backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
+    ...clayBorder,
     alignItems: 'center',
     justifyContent: 'center',
+    ...clayShadowSoft,
   },
   presionado: {
     backgroundColor: colors.surfaceAlt,
+    transform: [{ scale: 0.96 }],
   },
   logo: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
+    width: 48,
+    height: 48,
+    borderRadius: radius.md,
     backgroundColor: colors.brand,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.72)',
     alignItems: 'center',
     justifyContent: 'center',
+    ...clayShadowSoft,
   },
   textos: {
     flex: 1,

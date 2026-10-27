@@ -1,6 +1,6 @@
 import { ReglaNegocioError } from '../services/errors';
 
-export const URL_API_POR_DEFECTO = 'http://10.0.2.2:4000';
+export const URL_API_POR_DEFECTO = 'https://6ae0a4a2be3bc8fead97a3b2.mockapi.io';
 
 export function normalizarUrlApi(valor: string): string {
   const limpio = valor.trim().replace(/\/+$/, '');

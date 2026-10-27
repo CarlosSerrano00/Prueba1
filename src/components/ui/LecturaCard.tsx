@@ -111,9 +111,9 @@ export function LecturaCard({ lectura, onPress }: LecturaCardProps) {
 const estilos = StyleSheet.create({
   tarjeta: {
     gap: spacing.sm,
-    borderLeftWidth: 4,
+    borderLeftWidth: 5,
     padding: spacing.md,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
   },
   filaSuperior: {
     flexDirection: 'row',
@@ -142,7 +142,7 @@ const estilos = StyleSheet.create({
     gap: spacing.sm,
     flexWrap: 'wrap',
     borderTopWidth: 1,
-    borderTopColor: colors.surfaceAlt,
+    borderTopColor: 'rgba(183,194,222,0.45)',
     paddingTop: spacing.xs,
   },
   fecha: {

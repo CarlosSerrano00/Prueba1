@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, View } from 'react-native';
 
-import { colors, radius, spacing } from '../../constants/ui';
+import { clayShadowSoft, colors, radius, spacing } from '../../constants/ui';
 import type { PasoRegistro } from '../../types/models';
 import { Texto } from './Texto';
 
@@ -77,27 +77,29 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
   },
   circulo: {
-    width: 28,
-    height: 28,
+    width: 32,
+    height: 32,
     borderRadius: radius.pill,
     borderWidth: 1.5,
-    borderColor: colors.borderStrong,
+    borderColor: colors.white,
     backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
+    ...clayShadowSoft,
   },
   circuloActual: {
     backgroundColor: colors.accent,
-    borderColor: colors.accent,
+    borderColor: colors.white,
   },
   circuloCompletado: {
     backgroundColor: colors.success,
-    borderColor: colors.success,
+    borderColor: colors.white,
   },
   linea: {
     flex: 1,
-    height: 2,
-    backgroundColor: colors.border,
+    height: 5,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surfaceAlt,
     marginHorizontal: 4,
   },
   lineaCompletada: {

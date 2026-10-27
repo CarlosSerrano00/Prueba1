@@ -1,87 +1,73 @@
-# ADR-010: Simular el sistema de oficina con un servidor local compatible con MockAPI y URL configurable
+# ADR-010: Usar MockAPI como sistema de oficina y conservar un mock local compatible
+
+> **Actualización (2026-10-27):** la versión inicial de este ADR elegía un servidor local porque no había una URL de MockAPI disponible. El estudiante proporcionó después el proyecto `https://6ae0a4a2be3bc8fead97a3b2.mockapi.io`, se sembró y se verificó. La decisión final usa MockAPI por defecto y mantiene el servidor local como respaldo reproducible.
 
 ## Estado
 
-Aceptado.
+Aceptado y actualizado.
 
 ## Fecha
 
-2026-10-26.
+2026-10-26, actualizado el 2026-10-27.
 
 ## Requisitos relacionados
 
-R2, R3, R4, R9 y R10. El sistema simulado es el destino de la sincronización y la fuente de los medidores.
+R2, R3, R4, R9 y R10. MockAPI es la fuente de los medidores y el destino de la sincronización.
 
 ## Contexto
 
-El enunciado pide MockAPI o una herramienta equivalente, con recursos `medidores` y `lecturas`. No hay una cuenta de MockAPI configurada en el proyecto y no debo inventar una URL ni afirmar que el servicio existe.
+El enunciado pide MockAPI o una herramienta equivalente, con recursos `medidores` y `lecturas`. La app debe funcionar contra un servicio real y no debe simular respuestas dentro de las pantallas.
 
-La app necesita una API accesible desde un teléfono real para la demostración. Una URL de MockAPI en la nube sería ideal para el APK, pero:
+En la primera entrega no había una URL de MockAPI configurada. El estudiante entregó una URL del panel que terminaba en `/recursos`; esa ruta devuelve 404 y no es un endpoint REST. La raíz correcta es `https://6ae0a4a2be3bc8fead97a3b2.mockapi.io`, con los recursos `/medidores` y `/lecturas`.
 
-- requiere que el estudiante cree el proyecto y cargue los datos;
-- no puedo crear credenciales por él;
-- para probar la idempotencia necesito provocar fallos y revisar los registros, y un servidor local me da control total;
-- un MockAPI sin restricciones únicas no permite validar el rechazo de duplicados en el servidor.
-
-Al mismo tiempo, la app no debe incluir respuestas falsas dentro de las pantallas: la verificación de sincronización debe depender de una respuesta HTTP real.
+MockAPI gratuito no impone unicidad por `localId` ni por medidor/periodo. Por eso la idempotencia y la prevención de duplicados deben seguir viviendo en el cliente y en SQLite, sin confiar en una restricción del servidor.
 
 ## Alternativas consideradas
 
 | Alternativa | Ventajas en este proyecto | Desventajas en este proyecto |
 |---|---|---|
-| MockAPI en la nube | Es la opción pedida; URL pública accesible desde cualquier red; panel para ver registros. | Requiere cuenta y configuración manual; no puedo crearla desde aquí; no impone unicidad por `localId` ni por medidor/periodo, así que la idempotencia queda limitada a la comprobación previa. |
-| Servidor local Node compatible con la misma API REST | Sin credenciales; datos deterministas; se puede reiniciar; impone unicidad por `localId` y por medidor/periodo; sirve para probar fallos y duplicados. | El teléfono y la computadora deben estar en la misma red; la IP puede cambiar; no es un servicio público. |
-| `msw` o un mock dentro del bundle | No requiere red ni computadora. | Simularía las respuestas dentro de la app y ocultaría errores reales de comunicación; el enunciado prohíbe hacer parecer que una operación remota se completó. |
-| `json-server` | Poco código, API REST rápida. | No valida reglas de unicidad ni devuelve 409; agrega una dependencia de desarrollo. El servidor propio con `node:http` es más explícito y didáctico. |
+| MockAPI en la nube | Es la opción pedida; URL pública accesible desde cualquier red; panel para ver registros; HTTPS; el APK no depende de una PC. | No impone unicidad por `localId` ni por medidor/periodo; el plan gratuito limita registros; el seed debe ser idempotente. |
+| Solo servidor local Node compatible | Sin credenciales; datos deterministas; impone unicidad y permite simular fallos. | El teléfono y la computadora deben estar en la misma red; no demuestra un backend público. |
+| `msw` o un mock dentro del bundle | No requiere red. | Simularía las respuestas dentro de la app y ocultaría errores reales; contradice el enunciado. |
+| `json-server` | Poco código. | No valida reglas de unicidad ni devuelve 409; agrega una dependencia de desarrollo. |
 
 ## Decisión
 
-Se incluye `mock-api/server.mjs`, un servidor HTTP sin dependencias, y `mock-api/seed.json`, con datos de demostración. La API imita el contrato REST de MockAPI:
+Se usa **MockAPI por defecto** y se conserva el servidor local como alternativa didáctica.
 
-- `GET /medidores?codigo=...`
-- `GET /medidores/:id`
-- `GET /lecturas?localId=...`, `?codigoMedidor=...`, `?periodo=...`
-- `GET /lecturas/:id`
-- `POST /lecturas` (201; 409 si se repite `localId` o medidor/periodo)
-- `PATCH /lecturas/:id` (para pruebas manuales; la app no lo usa porque las enviadas son inmutables)
-- `GET /health`
+- URL base por defecto: `https://6ae0a4a2be3bc8fead97a3b2.mockapi.io`.
+- Recursos: `/medidores` y `/lecturas`. La ruta `/recursos` es una página del panel, no un endpoint; devuelve 404.
+- `mock-api/seed.json` es el contrato canónico. `src/utils/contratoRemoto.ts` arma los cuerpos con exactamente esos campos.
+- `scripts/seed-mockapi.mjs` siembra 10 medidores y 3 lecturas de forma idempotente, por `codigo` y por `localId`.
+- La app puede apuntar a otro MockAPI, a un túnel o al mock local desde **Perfil → Sistema de oficina**.
+- Prioridad de URL: `EXPO_PUBLIC_API_URL` → URL guardada en SQLite → MockAPI por defecto.
+- El mock local sigue disponible con `npm run mock:reset` y comparte los mismos endpoints. Si se usa, la URL debe cambiarse en Perfil; el teléfono y la PC deben estar en la misma red.
+- El plugin `plugins/withCleartextTraffic.js` se conserva para el mock local HTTP. MockAPI usa HTTPS y no lo necesita, pero el APK de demostración mantiene ambos escenarios.
 
-Los datos se guardan en `mock-api/db.json`, que se crea desde `seed.json` y está ignorado por Git. Se puede reiniciar con `npm run mock:reset`.
-
-La app obtiene la URL en este orden:
-
-1. `EXPO_PUBLIC_API_URL` si está definida al compilar;
-2. URL guardada desde la pantalla Perfil (SQLite, tabla `configuracion`);
-3. valor por defecto `http://10.0.2.2:4000` para el emulador Android.
-
-La URL se puede cambiar en tiempo de ejecución desde Perfil, lo que permite usar el APK con un MockAPI o con la IP LAN de la computadora sin recompilar. Se valida que sea `http://` o `https://` y se prueba con una petición real.
-
-Como Android 9+ bloquea el tráfico HTTP sin cifrar, se incluye el plugin local `plugins/withCleartextTraffic.js`, que agrega `android:usesCleartextTraffic="true"` al manifiesto. No agrega una dependencia: usa `expo/config-plugins`, que ya viene con Expo. En iOS se declara `NSAllowsLocalNetworking` para permitir la red local durante el desarrollo. Esta configuración es necesaria para la demostración con el servidor local; si se usa un MockAPI con HTTPS, el plugin puede eliminarse.
-
-La app funciona igual contra MockAPI: los servicios usan los mismos endpoints y campos. La diferencia es que el servidor local devuelve 409 en duplicados, mientras que MockAPI puede aceptar duplicados si la comprobación previa falla. Esa limitación se documenta y no se oculta.
+La app funciona igual contra MockAPI: los servicios usan los mismos endpoints y campos. La diferencia es que el servidor local devuelve 409 en duplicados, mientras que MockAPI puede aceptarlos si la comprobación previa falla. Esa limitación se documenta y no se oculta.
 
 No se incluyen datos de medidores dentro de las pantallas ni se simula un envío exitoso. Si la API no responde, la lectura queda pendiente y se muestra el error.
 
 ## Consecuencias
 
-- Se gana un entorno reproducible para la defensa y para probar R9/R10.
-- Se acepta que la demostración con servidor local requiere una computadora y una red compartida.
-- Riesgo: la IP LAN cambia entre redes. Por eso la URL es editable en la app y se muestra el estado de la conexión.
-- Riesgo: el servidor local no tiene autenticación y no debe exponerse a Internet. Es una herramienta de desarrollo.
-- Riesgo: los datos de `mock-api/db.json` se modifican al probar; hay que reiniciarlos para repetir escenarios. Se documenta el comando.
-- El APK no incluye una URL de MockAPI real; el estudiante debe configurarla o usar la IP del servidor local. No se afirma que el APK ya esté conectado a un backend de EPMAPS.
+- El APK puede demostrarse sin una computadora ni una red local.
+- Se gana un entorno reproducible con el mock local para probar 409 y fallos.
+- MockAPI no es una fuente de verdad para reglas de negocio: la idempotencia por `localId` y el `UNIQUE(codigo_medidor, periodo)` local siguen siendo necesarios.
+- El seed se puede ejecutar varias veces sin duplicar; si se borran registros desde el panel, el seed los vuelve a crear.
+- El plan gratuito y el límite de registros no son un escenario de producción.
+- La foto y los campos locales no se envían porque el seed no los define.
 
 ## Verificación
 
-1. Revisar `mock-api/server.mjs`, `mock-api/seed.json`, `src/services/apiConfig.ts` y `plugins/withCleartextTraffic.js`.
-2. Ejecutar `npm run mock` y abrir `http://localhost:4000/health`.
-3. Consultar `GET /medidores?codigo=MED-100001` y comprobar los siete datos.
-4. Hacer dos `POST /lecturas` con el mismo `localId` y comprobar que el segundo devuelve 409.
-5. Hacer dos `POST` con el mismo medidor y periodo y comprobar que el segundo devuelve 409.
-6. En la app, configurar la URL desde Perfil, probar la conexión y consultar un medidor.
-7. Revisar que ninguna pantalla contiene medidores hardcodeados ni marca un envío como exitoso sin respuesta del servidor.
-8. Verificar que `app.json` incluye `./plugins/withCleartextTraffic` y que el APK puede consultar el servidor HTTP local.
+1. Ejecutar `npm run seed:mockapi` y confirmar 10 medidores y 3 lecturas.
+2. Ejecutar de nuevo el seed y confirmar que no crea duplicados.
+3. Consultar `GET /medidores?codigo=MED-100001` y comprobar los ocho campos.
+4. Crear una lectura temporal con los nueve campos, consultarla por `localId` y borrarla.
+5. Actualizar un medidor temporal con `PUT` y borrarlo.
+6. Confirmar que `/recursos` devuelve 404 y que la app usa la raíz.
+7. Abrir la app, consultar un medidor y sincronizar una lectura.
+8. Opcional: `npm run mock:reset`, cambiar la URL en Perfil y repetir el flujo contra el servidor local.
 
 ## Uso de IA
 
-La IA propuso un servidor local compatible con MockAPI y una URL configurable, porque no hay credenciales de MockAPI en el proyecto y porque la rúbrica exige probar duplicados e idempotencia. Se mantiene el soporte para MockAPI mediante la misma interfaz. Se descartó simular la API dentro de la app porque ocultaría fallos reales y contradiría el enunciado. El estudiante debe revisar este ADR y decidir si, para la entrega final, prefiere configurar un MockAPI real y usar ese URL en el APK.
+La IA propuso inicialmente un servidor local porque no había una URL de MockAPI. Cuando el estudiante entregó la URL, se verificó que `/recursos` no era la API, se sembró la raíz correcta y se mantuvo el mock local como respaldo. El estudiante debe poder explicar por qué la raíz es la URL correcta, por qué `/recursos` da 404 y por qué la idempotencia no puede depender de MockAPI.

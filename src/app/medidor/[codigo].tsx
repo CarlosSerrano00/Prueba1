@@ -237,6 +237,17 @@ export default function MedidorScreen() {
             icono="analytics-outline"
           />
         </Card>
+        <Boton
+          titulo="Editar ficha del medidor"
+          onPress={() =>
+            router.push({
+              pathname: '/medidor/editar/[codigo]',
+              params: { codigo },
+            })
+          }
+          variante="secundario"
+          icono="create-outline"
+        />
       </View>
 
       <View style={estilos.referencia}>
@@ -292,6 +303,7 @@ const estilos = StyleSheet.create({
   hero: {
     gap: spacing.md,
     borderRadius: radius.lg,
+    backgroundColor: colors.surfaceBrand,
   },
   heroFila: {
     flexDirection: 'row',
@@ -299,10 +311,12 @@ const estilos = StyleSheet.create({
     gap: spacing.md,
   },
   iconoMedidor: {
-    width: 54,
-    height: 54,
+    width: 58,
+    height: 58,
     borderRadius: radius.md,
-    backgroundColor: colors.surfaceBrand,
+    backgroundColor: colors.surface,
+    borderWidth: 1.5,
+    borderColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -344,8 +358,11 @@ const estilos = StyleSheet.create({
   },
   referencia: {
     flexDirection: 'row',
-    backgroundColor: colors.surfaceAlt,
-    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1.5,
+    borderColor: colors.white,
+    borderBottomColor: 'rgba(130,139,183,0.24)',
     padding: spacing.md,
     gap: spacing.md,
   },
@@ -362,7 +379,8 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
     padding: spacing.md,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
+    backgroundColor: colors.surfaceAlt,
   },
   sincronizacionTexto: {
     flex: 1,

@@ -13,7 +13,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Alerta, Boton, CampoTexto, Card, Texto } from '@/components/ui';
-import { colors, radius, spacing } from '@/constants/ui';
+import { clayBorder, clayShadowSoft, clayShadowStrong, colors, radius, spacing } from '@/constants/ui';
 import { TECNICOS_DEMO } from '@/constants/tecnicos';
 import { useApp } from '@/context/AppProvider';
 import { mensajeDeError } from '@/services/errors';
@@ -118,10 +118,10 @@ export default function LoginScreen() {
               <CampoTexto
                 etiqueta="Código de empleado"
                 valor={codigo}
-                onChangeText={setCodigo}
+                onChangeText={(valor) => setCodigo(valor.toUpperCase())}
                 placeholder="TEC-001"
                 icono="id-card-outline"
-                autoCapitalize="none"
+                autoCapitalize="characters"
                 autoCorrect={false}
                 autoComplete="username"
                 maxLength={20}
@@ -138,6 +138,8 @@ export default function LoginScreen() {
                 autoCapitalize="none"
                 autoCorrect={false}
                 autoComplete="password"
+                maxLength={60}
+                contador={false}
                 testID="login-clave"
               />
 
@@ -220,37 +222,42 @@ const estilos = StyleSheet.create({
     backgroundColor: colors.brand,
     paddingHorizontal: spacing.xl,
     paddingBottom: spacing.huge + spacing.lg,
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
+    borderBottomLeftRadius: radius.xl,
+    borderBottomRightRadius: radius.xl,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.38)',
+    borderTopColor: 'rgba(255,255,255,0.65)',
+    borderBottomColor: 'rgba(40,43,120,0.38)',
     overflow: 'hidden',
     gap: spacing.xxl,
+    ...clayShadowStrong,
   },
   circulo1: {
     position: 'absolute',
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.10)',
-    right: -80,
-    top: -40,
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.14)',
+    right: -85,
+    top: -45,
   },
   circulo2: {
     position: 'absolute',
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    backgroundColor: 'rgba(14,116,144,0.28)',
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: 'rgba(14,165,164,0.34)',
     right: 26,
     top: 40,
   },
   circulo3: {
     position: 'absolute',
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 110,
+    height: 110,
+    borderRadius: 55,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(255,255,255,0.12)',
     left: -30,
     bottom: 24,
   },
@@ -260,13 +267,16 @@ const estilos = StyleSheet.create({
     gap: spacing.md,
   },
   logo: {
-    width: 54,
-    height: 54,
-    borderRadius: 18,
+    width: 58,
+    height: 58,
+    borderRadius: 19,
     backgroundColor: colors.accentSoft,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.72)',
     alignItems: 'center',
     justifyContent: 'center',
     transform: [{ rotate: '-6deg' }],
+    ...clayShadowSoft,
   },
   heroTexto: {
     gap: spacing.sm,
@@ -299,12 +309,15 @@ const estilos = StyleSheet.create({
     gap: spacing.md,
   },
   iconoJornada: {
-    width: 44,
-    height: 44,
+    width: 48,
+    height: 48,
     borderRadius: radius.md,
     backgroundColor: colors.warningSoft,
+    borderWidth: 1.5,
+    borderColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
+    ...clayShadowSoft,
   },
   nota: {
     flexDirection: 'row',
@@ -317,11 +330,11 @@ const estilos = StyleSheet.create({
   },
   demo: {
     backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderRadius: radius.xl,
+    ...clayBorder,
     padding: spacing.md,
     gap: spacing.sm,
+    ...clayShadowSoft,
   },
   demoCabecera: {
     flexDirection: 'row',
@@ -335,21 +348,24 @@ const estilos = StyleSheet.create({
     gap: spacing.md,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.sm,
-    borderRadius: radius.sm,
+    borderRadius: radius.md,
     backgroundColor: colors.surfaceAlt,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.86)',
   },
   demoPresionada: {
     backgroundColor: colors.accentSoft,
+    transform: [{ scale: 0.99 }],
   },
   demoAvatar: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderWidth: 1.5,
+    borderColor: colors.white,
   },
   demoTextos: {
     flex: 1,

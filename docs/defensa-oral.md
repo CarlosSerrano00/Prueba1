@@ -29,23 +29,24 @@
 2. Cerrar la app y abrirla: sigue dentro (R1).
 3. Ir a **Buscar**, escribir `MED-12` y pulsar buscar: error de formato, sin consulta (R2).
 4. Escribir `MED-100001`: se ven dirección, sector, cuenta, estado, última lectura, fecha y promedio (R3).
-5. Activar **modo avión**, volver a abrir el mismo medidor: se ven los siete datos con “Copia guardada” (R3).
+5. Activar **modo avión**, volver a abrir el mismo medidor: se ven todos los datos con “Copia guardada” (R3).
 
 **Decir:**
 
-> “La validación del código está en una sola función y se usa en tres puntos: la pantalla, el detalle y el servicio. Así, aunque alguien navegue directo por URL, el servicio no consulta con un código inválido. La caché guarda los siete campos y la fecha de consulta. Si ya consulté hoy, la entrego desde SQLite; si quiero forzar la oficina, deslizo hacia abajo.”
+> “La validación del código está en una sola función y se usa en tres puntos: la pantalla, el detalle y el servicio. Así, aunque alguien navegue directo por URL, el servicio no consulta con un código inválido. La caché guarda todos los campos de la ficha y la fecha de consulta. Si ya consulté hoy, la entrego desde SQLite; si quiero forzar la oficina, deslizo hacia abajo.”
 
 **Código para abrir:** `src/utils/validators.ts` (patrón) y `src/services/medidoresService.ts` (cache-first).
 
 ### 3:00–6:00 · R5, R6 y R7
 
 1. Abrir `MED-100001` → **Registrar lectura**.
-2. En el paso 1, probar **Normal** sin lectura: error.
-3. Cambiar a **Inaccesible** sin motivo: error. Escribir un motivo: la lectura se oculta y no se registra.
-4. Volver a **Normal**, escribir `161`. Aparece la advertencia de anomalía.
-5. Intentar continuar sin confirmar y sin foto: no deja.
-6. Confirmar la revisión y tomar la foto.
-7. Explicar que con `160` el consumo es 60 y **no** hay anomalía, porque el límite es “más del triple”, no “igual o más”.
+2. En el paso 1, abrir el calendario de **Fecha de registro**; mostrar que no permite fechas futuras y que el periodo cambia si se elige otro mes.
+3. Probar **Normal** sin lectura: error.
+4. Cambiar a **Inaccesible** sin motivo: error. Escribir un motivo: la lectura se oculta y no se registra.
+5. Volver a **Normal**, escribir `161`. Aparece la advertencia de anomalía.
+6. Intentar continuar sin confirmar y sin foto: no deja.
+7. Confirmar la revisión y tomar la foto.
+8. Explicar que con `160` el consumo es 60 y **no** hay anomalía, porque el límite es “más del triple”, no “igual o más”.
 
 **Decir:**
 
@@ -94,11 +95,13 @@
 
 > “La regla de una lectura por medidor y mes está en tres capas: la pantalla avisa, el servicio consulta antes de insertar y SQLite tiene una restricción UNIQUE. La base es la última defensa. Una lectura enviada es inmutable: no se puede corregir ni desde la pantalla ni desde el servicio.”
 
-**Si queda tiempo:** guardar `MED-100008`, que ya tiene una lectura de octubre en el mock, y sincronizar. El servidor responde 409 y la lectura pasa a “requiere revisión”. Eso demuestra que la oficina también rechaza el duplicado aunque el teléfono no lo conociera.
+**Si queda tiempo:** guardar `MED-100008`, que ya tiene una lectura de octubre en MockAPI, y sincronizar. El servidor responde 409 y la lectura pasa a “requiere revisión”. Eso demuestra que la oficina también rechaza el duplicado aunque el teléfono no lo conociera.
+
+**Cierre visual:** abrir la ficha de `MED-100001` → **Editar**, cambiar la fecha con el calendario y guardar. Recorrer login, tab bar flotante, tarjetas y alertas para mostrar el Claymorphism.
 
 **Cerrar:**
 
-> “Lo que no está terminado es la prueba en dispositivo: el APK se compiló en EAS, pero en mi entorno no había emulador para instalarlo y recorrerlo. Preferí no afirmar que estaba probado. La lógica de dominio y sincronización sí está cubierta con 40 pruebas automatizadas.”
+> “Lo que no está terminado es la prueba en dispositivo: el APK se compiló en EAS, pero en mi entorno no había emulador para instalarlo y recorrerlo. Preferí no afirmar que estaba probado. La lógica de dominio, fechas, contrato remoto y sincronización sí está cubierta con 55 pruebas automatizadas.”
 
 ---
 
@@ -162,13 +165,30 @@ Porque el proyecto ya usa Expo y Router da rutas por archivos, tipadas, con grup
 - `expo-image-picker`: cámara.
 - `expo-file-system`: copiar la foto a documentos.
 - `expo-network`: detectar conexión.
+- `@react-native-community/datetimepicker`: selector nativo de fechas.
 - `@expo/vector-icons`: iconos (ya venía con Expo).
 - `tsx` y `@types/node`: ejecutar pruebas TypeScript con `node:test`.
 - `eslint` y `eslint-config-expo`: lint.
 
 Cada una tiene su ADR. No se instalaron Axios, TanStack Query, Zustand, Redux, Zod, Formik ni una librería de UI.
 
-### 15. ¿Qué harías con más tiempo?
+### 15. ¿Por qué usaste un selector nativo de fechas?
+
+Porque los campos `fechaUltimaLectura` y `fechaRegistro` son Date en MockAPI. Escribir la fecha a mano produce errores de formato y días imposibles. `CampoFecha` usa el diálogo nativo en Android, un modal en iOS y un campo de respaldo en web. La regla de dominio vuelve a validar: no fechas futuras y, en lecturas nuevas, máximo un año atrás.
+
+### 16. ¿Cómo evitas que una fecha se corra un día por UTC?
+
+Los campos de día se guardan como `YYYY-MM-DD` y se interpretan a mediodía local. Una fecha de MockAPI que llega como medianoche UTC se trata como el mismo día calendario. Para `fechaRegistro`, que es un instante, se envía ISO completo. No uso `new Date('2026-09-20')` para los campos de día.
+
+### 17. ¿Qué campos se envían a MockAPI?
+
+Solo los del seed. `/lecturas` recibe nueve campos y `/medidores/:id` ocho. La foto, el motivo, la descripción del daño y el consumo calculado son locales. `tests/contratoRemoto.test.ts` comprueba que no se filtren campos extra.
+
+### 18. ¿Qué es Claymorphism y por qué?
+
+Es una identidad de superficies blandas: bordes claros y oscuros, sombras suaves, campos hundidos y radios grandes. Se eligió frente a flat, glassmorphism y neumorphism porque da personalidad sin sacrificar contraste. Los estados siempre llevan texto e icono, no solo color; las áreas táctiles miden al menos 48 px. Está en `src/constants/ui.ts` y el ADR-014.
+
+### 19. ¿Qué harías con más tiempo?
 
 - Subir la foto a un almacenamiento externo y guardar la URL (requisito opcional).
 - Backoff exponencial y cola con prioridad.
@@ -183,7 +203,7 @@ Cada una tiene su ADR. No se instalaron Axios, TanStack Query, Zustand, Redux, Z
 - **No decir** “está probado en el teléfono” si no se instaló el APK.
 - **No decir** “la caché se actualiza sola en segundo plano”: la estrategia real es cache-first por jornada y actualización explícita al deslizar.
 - **No confundir** “enviado” con “guardado”: guardar solo crea la lectura local; enviado significa que la oficina confirmó.
-- **No decir** que la foto se sube al servidor: se guarda en el teléfono y se envía el nombre del archivo.
+- **No decir** que la foto se sube al servidor: se guarda en el teléfono y el contrato remoto no tiene campo de foto.
 - **No justificar** una dependencia con “es la más popular”. Justificarla con el requisito que resuelve.
 
 ## Código mínimo que conviene saber de memoria

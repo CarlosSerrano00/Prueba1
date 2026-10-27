@@ -178,12 +178,15 @@ const estilos = StyleSheet.create({
   },
   hero: {
     gap: spacing.sm,
+    backgroundColor: colors.surfaceBrand,
   },
   icono: {
-    width: 58,
-    height: 58,
+    width: 62,
+    height: 62,
     borderRadius: radius.md,
     backgroundColor: colors.draftSoft,
+    borderWidth: 1.5,
+    borderColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
   },

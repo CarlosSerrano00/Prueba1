@@ -21,7 +21,7 @@
       "package": "ec.edu.esfot.aquaruta",
       "versionCode": 1,
       "adaptiveIcon": {
-        "backgroundColor": "#073B4C",
+        "backgroundColor": "#5B5BD6",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -37,7 +37,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#073B4C",
+          "backgroundColor": "#5B5BD6",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 160
         }
@@ -51,7 +51,8 @@
           "microphonePermission": false
         }
       ],
-      "./plugins/withCleartextTraffic"
+      "./plugins/withCleartextTraffic",
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,

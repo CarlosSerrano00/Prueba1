@@ -1,29 +1,44 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colors, fonts, spacing } from '@/constants/ui';
+import { cardShadow, clayBorder, colors, fonts, radius, spacing } from '@/constants/ui';
 
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
+  const margenInferior = Math.max(insets.bottom, spacing.sm);
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.accentDark,
+        tabBarActiveTintColor: colors.brand,
         tabBarInactiveTintColor: colors.textSoft,
         tabBarHideOnKeyboard: true,
         tabBarLabelStyle: {
           fontFamily: fonts.medium,
           fontSize: 11,
-          fontWeight: '600',
-          marginTop: 1,
+          fontWeight: '700',
+          marginTop: 2,
         },
         tabBarStyle: {
+          position: 'absolute',
+          left: spacing.md,
+          right: spacing.md,
+          bottom: margenInferior,
+          height: 74,
           backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-          borderTopWidth: 1,
-          paddingTop: spacing.xs + 2,
-          paddingBottom: Platform.OS === 'android' ? spacing.sm : 2,
+          borderRadius: radius.xl,
+          ...clayBorder,
+          borderTopWidth: 1.5,
+          paddingTop: spacing.sm,
+          paddingBottom: Platform.OS === 'android' ? spacing.sm + 2 : spacing.sm,
+          ...cardShadow,
+        },
+        tabBarItemStyle: {
+          borderRadius: radius.lg,
+          marginHorizontal: 2,
         },
       }}
     >

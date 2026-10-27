@@ -10,6 +10,7 @@ import {
   AppScreen,
   Badge,
   Boton,
+  CampoFecha,
   CampoTexto,
   Card,
   ChoiceCard,
@@ -51,10 +52,18 @@ import type {
 import { DATOS_FORMULARIO_VACIOS } from '@/types/models';
 import { evaluarConsumo } from '@/utils/consumo';
 import {
+  fechaLocalISO,
+  hoyISO,
+  normalizarFechaDia,
+  periodoDeFecha,
+  sumarDias,
+} from '@/utils/fechas';
+import {
+  formatearFecha,
   formatearFechaHora,
   formatearMetros,
 } from '@/utils/format';
-import { obtenerPeriodo } from '@/utils/periodo';
+import { nombrePeriodo, obtenerPeriodo } from '@/utils/periodo';
 import {
   fotoEsObligatoria,
   parsearLectura,
@@ -74,6 +83,7 @@ function normalizarParam(valor: string | string[] | undefined): string | null {
 function datosDesdeLectura(lectura: Lectura): DatosFormulario {
   return {
     tipoEstado: lectura.tipoEstado,
+    fechaRegistro: normalizarFechaDia(lectura.fechaRegistro) ?? fechaLocalISO(),
     lecturaActual: lectura.lecturaActual != null ? String(lectura.lecturaActual) : '',
     motivoInaccesible: lectura.motivoInaccesible ?? '',
     descripcionDano: lectura.descripcionDano ?? '',
@@ -198,7 +208,12 @@ export default function RegistroScreen() {
           if (!activo) return;
           setDraftId(borrador.localId);
           setDraftCreadoEn(borrador.creadoEn);
-          setDatos(borrador.datos);
+          setDatos({
+            ...DATOS_FORMULARIO_VACIOS,
+            ...borrador.datos,
+            fechaRegistro:
+              borrador.datos.fechaRegistro ?? fechaLocalISO(new Date(borrador.creadoEn)),
+          });
           setPaso(borrador.paso);
           setFotoUri(borrador.fotoUri);
           setFotoOriginal(lecturaBorrador?.fotoUri ?? borrador.fotoUri);
@@ -235,7 +250,10 @@ export default function RegistroScreen() {
         if (!activo) return;
         setDraftId(guardado.localId);
         setDraftCreadoEn(guardado.creadoEn);
-        setDatos(guardado.datos);
+        setDatos({
+          ...guardado.datos,
+          fechaRegistro: guardado.datos.fechaRegistro ?? fechaLocalISO(new Date(guardado.creadoEn)),
+        });
         setPaso(1);
         setFotoUri(null);
         setListo(true);
@@ -334,7 +352,7 @@ export default function RegistroScreen() {
 
   async function continuarDesdeDatos() {
     if (!medidor) return;
-    const validacion = validarDatosRegistro(datos, medidor);
+    const validacion = validarDatosRegistro(datos, medidor, { validarFecha: !editando });
     if (!validacion.valido) {
       setErrores(validacion.errores);
       return;
@@ -344,7 +362,9 @@ export default function RegistroScreen() {
 
   async function continuarDesdeFoto() {
     if (!medidor) return;
-    const validacion = validarRegistroCompleto(datos, medidor, fotoUri);
+    const validacion = validarRegistroCompleto(datos, medidor, fotoUri, {
+      validarFecha: !editando,
+    });
     if (!validacion.valido) {
       setErrores(validacion.errores);
       return;
@@ -444,7 +464,8 @@ export default function RegistroScreen() {
         fotoUri,
         codigoTecnico: sesion.codigoTecnico,
         borradorId: draftId,
-        periodo: obtenerPeriodo(new Date(draftCreadoEn)),
+        periodo:
+          periodoDeFecha(datos.fechaRegistro) ?? obtenerPeriodo(new Date(draftCreadoEn)),
       });
       await refrescarEstado();
       router.replace(`/lectura/${nueva.localId}`);
@@ -486,7 +507,10 @@ export default function RegistroScreen() {
       const guardado = await guardarBorrador(nuevo);
       setDraftId(guardado.localId);
       setDraftCreadoEn(guardado.creadoEn);
-      setDatos(guardado.datos);
+      setDatos({
+        ...guardado.datos,
+        fechaRegistro: guardado.datos.fechaRegistro ?? fechaLocalISO(new Date(guardado.creadoEn)),
+      });
       setPaso(1);
       setFotoUri(null);
       setListo(true);
@@ -629,6 +653,39 @@ export default function RegistroScreen() {
         <>
           <View style={estilos.seccion}>
             <SectionTitle
+              titulo="Fecha de la lectura"
+              descripcion="Define el periodo mensual que se usará para detectar duplicados."
+            />
+            {editando ? (
+              <Card estilo={estilos.fechaCard}>
+                <View style={estilos.fechaBloqueada}>
+                  <Ionicons name="lock-closed-outline" size={20} color={colors.info} />
+                  <View style={estilos.fechaBloqueadaTexto}>
+                    <Texto variante="cuerpoFuerte">
+                      {formatearFecha(datos.fechaRegistro ?? editando.fechaRegistro)}
+                    </Texto>
+                    <Texto variante="caption" color={colors.textMuted}>
+                      La fecha y el periodo originales no cambian al corregir una lectura.
+                    </Texto>
+                  </View>
+                </View>
+              </Card>
+            ) : (
+              <CampoFecha
+                etiqueta="Fecha de registro"
+                valor={datos.fechaRegistro ?? fechaLocalISO()}
+                onChange={(valor) => cambiarDatos({ fechaRegistro: valor ?? fechaLocalISO() })}
+                min={sumarDias(hoyISO(), -365)}
+                max={hoyISO()}
+                requerida
+                error={errores.fechaRegistro}
+                ayuda="Puedes registrar una lectura de hasta un año atrás. No se permiten fechas futuras."
+              />
+            )}
+          </View>
+
+          <View style={estilos.seccion}>
+            <SectionTitle
               titulo="¿Qué encontraste?"
               descripcion="El estado define qué datos son obligatorios."
             />
@@ -702,6 +759,7 @@ export default function RegistroScreen() {
                 placeholder="Si el visor permite leer, escríbela aquí"
                 keyboardType="decimal-pad"
                 sufijo="m³"
+                maxLength={10}
                 error={errores.lecturaActual}
                 ayuda="La lectura es opcional cuando el medidor está dañado."
               />
@@ -716,6 +774,7 @@ export default function RegistroScreen() {
               placeholder="Ejemplo: 160"
               keyboardType="decimal-pad"
               sufijo="m³"
+              maxLength={10}
               error={errores.lecturaActual}
               ayuda="Usa coma o punto para los decimales. No puede ser menor que la lectura anterior."
             />
@@ -946,9 +1005,19 @@ export default function RegistroScreen() {
               icono="shield-checkmark-outline"
             />
             <InfoRow
-              etiqueta="Periodo"
-              valor={obtenerPeriodo(new Date(editando?.periodo ?? draftCreadoEn))}
+              etiqueta="Fecha de registro"
+              valor={formatearFecha(
+                datos.fechaRegistro ?? editando?.fechaRegistro ?? draftCreadoEn,
+              )}
               icono="calendar-outline"
+            />
+            <InfoRow
+              etiqueta="Periodo"
+              valor={nombrePeriodo(
+                periodoDeFecha(datos.fechaRegistro ?? editando?.fechaRegistro) ??
+                  obtenerPeriodo(new Date(draftCreadoEn)),
+              )}
+              icono="calendar-number-outline"
             />
           </Card>
 
@@ -1050,13 +1119,15 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
     padding: spacing.md,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
   },
   medidorIcono: {
-    width: 44,
-    height: 44,
+    width: 46,
+    height: 46,
     borderRadius: radius.sm,
     backgroundColor: colors.surfaceBrand,
+    borderWidth: 1.5,
+    borderColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1066,6 +1137,18 @@ const estilos = StyleSheet.create({
   },
   seccion: {
     gap: spacing.md,
+  },
+  fechaCard: {
+    gap: spacing.xs,
+  },
+  fechaBloqueada: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  fechaBloqueadaTexto: {
+    flex: 1,
+    gap: 2,
   },
   listaOpciones: {
     gap: spacing.sm,
@@ -1100,9 +1183,10 @@ const estilos = StyleSheet.create({
     alignItems: 'flex-start',
     gap: spacing.md,
     borderWidth: 1.5,
-    borderColor: colors.border,
+    borderColor: colors.white,
+    borderBottomColor: 'rgba(130,139,183,0.24)',
     backgroundColor: colors.surface,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     padding: spacing.md,
   },
   checkboxFilaActiva: {
@@ -1155,7 +1239,7 @@ const estilos = StyleSheet.create({
   fotoMini: {
     width: '100%',
     height: 170,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     backgroundColor: colors.surfaceAlt,
   },
   accionDuplicada: {

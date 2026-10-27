@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
-import { colors, spacing } from '../../constants/ui';
+import { colors, radius, spacing } from '../../constants/ui';
 import { ConnectionStrip } from './ConnectionStrip';
 
 interface AppScreenProps {
@@ -61,6 +61,11 @@ export function AppScreen({
 
   return (
     <SafeAreaView edges={edges} style={[estilos.pantalla, style]}>
+      <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+        <View style={[estilos.blob, estilos.blobLavanda]} />
+        <View style={[estilos.blob, estilos.blobMenta]} />
+        <View style={[estilos.blob, estilos.blobDurazno]} />
+      </View>
       {mostrarConexion ? <ConnectionStrip /> : null}
       {evitarTeclado ? (
         <KeyboardAvoidingView
@@ -80,6 +85,7 @@ const estilos = StyleSheet.create({
   pantalla: {
     flex: 1,
     backgroundColor: colors.background,
+    overflow: 'hidden',
   },
   flex: {
     flex: 1,
@@ -89,8 +95,8 @@ const estilos = StyleSheet.create({
     maxWidth: 760,
     alignSelf: 'center',
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.xxxl,
+    paddingTop: spacing.md,
+    paddingBottom: 118,
     gap: spacing.lg,
   },
   contenidoSinScroll: {
@@ -99,6 +105,33 @@ const estilos = StyleSheet.create({
     alignSelf: 'center',
     flex: 1,
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: 110,
+  },
+  blob: {
+    position: 'absolute',
+    borderRadius: radius.pill,
+    opacity: 0.65,
+  },
+  blobLavanda: {
+    width: 250,
+    height: 250,
+    right: -100,
+    top: -90,
+    backgroundColor: colors.blobLavender,
+  },
+  blobMenta: {
+    width: 190,
+    height: 190,
+    left: -95,
+    top: 340,
+    backgroundColor: colors.blobMint,
+  },
+  blobDurazno: {
+    width: 160,
+    height: 160,
+    right: -80,
+    bottom: 80,
+    backgroundColor: colors.blobPeach,
   },
 });

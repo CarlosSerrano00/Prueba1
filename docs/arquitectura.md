@@ -31,13 +31,13 @@ La arquitectura prioriza tres cosas:
                 │                              │
 ┌───────────────▼──────────────┐ ┌─────────────▼───────────────┐
 │ Persistencia · src/storage    │ │ Red · apiClient / fetch      │
-│ SQLite: tablas y repositorios │ │ MockAPI o mock-api/ local    │
+│ SQLite: tablas y repositorios │ │ MockAPI /medidores y /lecturas│
 └───────────────────────────────┘ └──────────────────────────────┘
 ```
 
 ### Por qué esta separación
 
-- Las **funciones puras** (`validators.ts`, `consumo.ts`, `verificacion.ts`, `periodo.ts`) se prueban con `node:test` sin emulador.
+- Las **funciones puras** (`validators.ts`, `validacionesEntidades.ts`, `fechas.ts`, `consumo.ts`, `verificacion.ts`, `periodo.ts`, `contratoRemoto.ts`) se prueban con `node:test` sin emulador.
 - El **motor de sincronización** (`syncEngine.ts`) recibe sus dependencias como interfaz. En producción usa SQLite y `fetch`; en las pruebas usa arrays y funciones falsas. Así se puede simular un corte de red sin un dispositivo.
 - `AppProvider` es el único estado global. Evita que cada pantalla consulte la base por su cuenta para saber cuántas lecturas quedan pendientes.
 
@@ -99,6 +99,21 @@ Un registro por captura en curso. Guarda `codigo_medidor`, `codigo_tecnico`, `pa
 ### `configuracion`
 
 Pares clave/valor. Se usa para la URL del sistema de oficina (`url_api`).
+
+### Contrato remoto de MockAPI
+
+La raíz por defecto es `https://6ae0a4a2be3bc8fead97a3b2.mockapi.io`; los recursos son `/medidores` y `/lecturas`. La ruta `/recursos` del panel de MockAPI **no** es un endpoint: devuelve 404.
+
+`src/utils/contratoRemoto.ts` es el único lugar que arma los cuerpos remotos. El seed `mock-api/seed.json` manda: no se agregan campos de apoyo local.
+
+| Recurso | Campos remotos |
+|---|---|
+| `medidores` | `codigo`, `direccion`, `sector`, `numeroCuenta`, `estado`, `ultimaLectura`, `fechaUltimaLectura`, `consumoPromedioMensual` |
+| `lecturas` | `localId`, `medidorId`, `codigoMedidor`, `codigoTecnico`, `fechaRegistro`, `periodo`, `tipoEstado`, `lecturaActual`, `estadoVerificacion` |
+
+`medidores.fechaUltimaLectura` se guarda como día `YYYY-MM-DD`; `lecturas.fechaRegistro` se envía como instante ISO. La foto, el motivo, la descripción del daño y el consumo calculado **no** viajan a MockAPI: quedan en SQLite y se usan para reglas locales.
+
+`scripts/seed-mockapi.mjs` siembra los datos de demostración de forma idempotente (por `codigo` y `localId`). MockAPI no impone unicidad de negocio; la idempotencia de envío sigue siendo responsabilidad del cliente.
 
 ## 4. Estados
 
@@ -175,9 +190,11 @@ Detalle de la pantalla: `src/app/medidor/[codigo].tsx`. El gesto de actualizar (
 
 ### 5.3 Captura en tres pasos (R5–R8)
 
-1. **Estado y datos.** Elección entre normal / inaccesible / dañado; campos condicionales. La validación de este paso no exige foto.
+1. **Estado y datos.** Elección entre normal / inaccesible / dañado; campos condicionales. La fecha de registro se elige con `CampoFecha` (calendario nativo en Android/iOS) y se valida contra un año atrás y hoy. La validación de este paso no exige foto.
 2. **Foto y advertencia.** Se evalúa el consumo. Si hay anomalía, se muestra la advertencia, se exige confirmación y la foto pasa a ser obligatoria. Si el medidor está dañado, la foto también es obligatoria. En el resto de casos se puede continuar sin foto.
-3. **Resumen y guardado.** Se revisa todo y se guarda como lectura pendiente.
+3. **Resumen y guardado.** Se revisa todo, incluidos fecha y periodo derivado, y se guarda como lectura pendiente.
+
+La fecha se guarda como día calendario en el formulario; al guardar se convierte a instante ISO. Si el día elegido es hoy se conserva la hora real; para días pasados se usa el mediodía local para que la zona horaria no mueva el día. Al corregir una lectura existente, la fecha original no cambia.
 
 La foto se toma con `expo-image-picker` y se **copia** de la caché temporal a `Paths.document/fotos-lecturas` antes de guardar la URI. Así sobrevive a reinicios y a la limpieza de caché del sistema.
 
@@ -222,6 +239,7 @@ para cada lectura:
 Puntos importantes:
 
 - **Antes de enviar se busca el `localId`.** Si el POST llegó al servidor pero la respuesta se perdió, el siguiente intento encuentra la lectura y no la duplica.
+- **El cuerpo del POST usa solo los nueve campos del seed** (`cuerpoLecturaRemota`), no el modelo local completo. Lo mismo aplica al `PUT` del medidor.
 - **Un 409 por `localId` no es un error definitivo**: significa que el envío anterior sí se registró.
 - **Un 409 por medidor/periodo sí es revisión**: alguien más registró ese medidor en el mes, o la lectura local choca con una ya existente.
 - El motor es secuencial. Si se corta la red, se detiene y deja el resto pendiente para el próximo ciclo.
@@ -233,6 +251,12 @@ Puntos importantes:
 - Al corregir, la lectura vuelve a `pendiente`, se reinician intentos y error.
 - Antes de insertar se busca `(codigo_medidor, periodo)`. Si existe, se lanza `LecturaDuplicadaError` con la lectura existente para que la interfaz ofrezca verla o corregirla.
 - Si la comprobación previa falla por una carrera, SQLite lanza `UNIQUE constraint failed`; el servicio lo traduce al mismo error de dominio.
+
+### 5.7 Edición de la ficha del medidor
+
+`src/app/medidor/editar/[codigo].tsx` reutiliza la ficha cacheada y permite actualizar dirección, sector, cuenta, estado, última lectura, fecha de última lectura y promedio. La fecha usa `CampoFecha` y la coherencia lectura/fecha se valida antes del `PUT /medidores/:id`.
+
+La actualización exige conexión: no se inventa una cola para fichas de medidor. Si la copia local no tiene `idRemoto`, el botón de edición se deshabilita con una explicación. Tras un `PUT` exitoso se parsea la respuesta y se actualiza la caché local; si el servidor devuelve un estado que la app no reconoce, no se guarda como válido.
 
 ## 6. Conectividad
 
@@ -273,9 +297,11 @@ Los parsers (`apiParsers.ts`) validan campo por campo antes de escribir en cach�
 | Sincronización | Idempotencia por `localId` | [ADR-007](adr/ADR-007-sincronizacion-idempotente.md) |
 | UI | Componentes propios + iconos | [ADR-008](adr/ADR-008-identidad-visual-e-iconos.md) |
 | Pruebas | `node:test` + `tsx` | [ADR-009](adr/ADR-009-pruebas-automatizadas.md) |
-| API | Mock local compatible + URL configurable | [ADR-010](adr/ADR-010-api-simulada-y-url-configurable.md) |
+| API | MockAPI + URL configurable | [ADR-010](adr/ADR-010-api-simulada-y-url-configurable.md) |
 | Navegación | Expo Router | [ADR-011](adr/ADR-011-navegacion-expo-router.md) |
 | Duplicados | Periodo `YYYY-MM` + `UNIQUE` | [ADR-012](adr/ADR-012-periodo-mensual-y-duplicados.md) |
+| Fechas | Selector nativo + normalización de día | [ADR-013](adr/ADR-013-selector-de-fechas-y-normalizacion.md) |
+| Diseño | Claymorphism | [ADR-014](adr/ADR-014-claymorphism.md) |
 
 ### 8.1 Dependencias y justificación
 
@@ -287,6 +313,7 @@ Los parsers (`apiParsers.ts`) validan campo por campo antes de escribir en cach�
 | `expo-image-picker` | Agregada | Cámara y permisos (R7). |
 | `expo-file-system` | Agregada | Copiar la foto a almacenamiento permanente (R7). |
 | `expo-network` | Agregada | Detectar conexión para el envío automático (R9). |
+| `@react-native-community/datetimepicker` | Agregada | Selector nativo de fechas para `fechaUltimaLectura` y `fechaRegistro`. |
 | `@expo/vector-icons` | Template | Iconos de la interfaz; incluido con Expo. |
 | `expo-image` | Template | Renderizado eficiente de las miniaturas de foto. |
 | `expo-splash-screen` | Template | Pantalla de arranque con la identidad de AquaRuta. |
@@ -318,6 +345,7 @@ src/
       lecturas.tsx
       perfil.tsx
     medidor/[codigo].tsx
+    medidor/editar/[codigo].tsx
     registro/[codigo].tsx
     lectura/[localId].tsx
     borrador.tsx
@@ -341,6 +369,9 @@ src/
     mappers.ts               Fila ↔ modelo
   utils/
     validators.ts            R2/R5/R6
+    validacionesEntidades.ts Rangos, longitudes y ficha del medidor
+    fechas.ts                Día calendario, ISO y límites
+    contratoRemoto.ts        Campos exactos de MockAPI
     consumo.ts               R6
     verificacion.ts          Estados de verificación
     periodo.ts               Periodo mensual local
@@ -350,7 +381,8 @@ src/
 ## 10. Límites asumidos
 
 - La autenticación es local y con datos quemados, como autoriza el enunciado.
-- No hay subida binaria de fotos; se envía el nombre del archivo y una bandera de disponibilidad. La subida a un servicio externo era opcional.
+- No hay subida binaria de fotos. El contrato remoto de MockAPI no tiene campos de foto ni de evidencia: esos datos quedan solo en SQLite. La subida a un servicio externo era opcional y no se implementó.
 - El mock local guarda en un JSON y no implementa concurrencia real; la restricción de duplicados también vive en SQLite del teléfono y en la comprobación previa.
 - La sincronización no tiene backoff exponencial; reintenta cada 30 s mientras haya red y pendientes.
 - La app no administra usuarios, roles ni cierre automático de jornada.
+- La edición de la ficha del medidor requiere conexión; no se encola como las lecturas.

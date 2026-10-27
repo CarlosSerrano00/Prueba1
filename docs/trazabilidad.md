@@ -14,9 +14,9 @@ Mapa entre cada requisito de la prueba, su criterio de aceptación, el código q
 |---|---|---|---|---|
 | R1 | 1 | `sesionService.ts`, `sesionRepository.ts`, `_layout.tsx` | Recorrido manual | 🧪 |
 | R2 | 1 | `validators.ts`, `buscar.tsx`, `medidoresService.ts` | `validators.test.ts` | ✅ |
-| R3 | 2 | `medidoresService.ts`, `medidoresRepository.ts`, `medidor/[codigo].tsx` | `medidoresService` + mock | 🧪 |
+| R3 | 2 | `medidoresService.ts`, `medidoresRepository.ts`, `medidor/[codigo].tsx` | `medidoresService` + MockAPI | ✅ |
 | R4 | 1 | `registro/[codigo].tsx`, `lecturasService.ts`, `syncEngine.ts` | `syncEngine.test.ts` | ✅ |
-| R5 | 2 | `validators.ts`, paso 1 del registro | `validators.test.ts` (9 casos) | ✅ |
+| R5 | 2 | `validators.ts`, `validacionesEntidades.ts`, paso 1 del registro | `validators.test.ts`, `validacionesEntidades.test.ts` | ✅ |
 | R6 | 1 | `consumo.ts`, `verificacion.ts`, paso 2 | `consumo.test.ts` | ✅ |
 | R7 | 2 | `fotoService.ts`, `FotoMedidor.tsx`, validadores | `validators.test.ts` (foto) | 🧪 |
 | R8 | 2 | `borradoresService.ts`, `borrador.tsx`, registro | Recorrido manual | 🧪 |
@@ -70,7 +70,7 @@ Mapa entre cada requisito de la prueba, su criterio de aceptación, el código q
 
 ## R3 · Datos del medidor y caché
 
-**Criterio:** con señal se muestran los siete datos; tras activar modo avión, una segunda consulta del mismo medidor muestra sus datos sin error.
+**Criterio:** con señal se muestran todos los datos de la ficha; tras activar modo avión, una segunda consulta del mismo medidor muestra sus datos sin error.
 
 **Implementación**
 
@@ -80,14 +80,16 @@ Mapa entre cada requisito de la prueba, su criterio de aceptación, el código q
   - sin red se devuelve la copia con advertencia;
   - si la consulta remota falla y hay copia, se conserva.
 - `src/storage/medidoresRepository.ts`: `guardarMedidor` con `ON CONFLICT(codigo) DO UPDATE`.
-- `src/app/medidor/[codigo].tsx`: muestra los siete campos, el origen (`Datos de oficina` / `Copia guardada`) y la fecha de la copia. El `RefreshControl` pasa `forzarRed = true`.
+- `src/app/medidor/[codigo].tsx`: muestra todos los campos de la ficha, el origen (`Datos de oficina` / `Copia guardada`) y la fecha de la copia. El `RefreshControl` pasa `forzarRed = true`.
+- `src/app/medidor/editar/[codigo].tsx`: edición de la ficha con `PUT /medidores/:id`, incluida `fechaUltimaLectura` con calendario nativo.
 - `src/app/(tabs)/buscar.tsx` y `src/app/registro/[codigo].tsx` reutilizan la misma consulta.
 
 **Evidencia**
 
-- `mock-api/server.mjs`: `GET /medidores?codigo=MED-100001` responde los siete campos; probado con `curl` durante el desarrollo.
-- La tabla `medidores_cache` guarda `consultado_en` y los siete datos.
+- MockAPI sembrado: `GET /medidores?codigo=MED-100001` devuelve los ocho campos del seed; probado con una petición real durante el desarrollo.
+- La tabla `medidores_cache` guarda `consultado_en` y los datos de la ficha.
 - El aviso cambia de tono: informativo si la copia es de hoy y hay red; advertencia si es antigua o no hay conexión.
+- `PUT` probado con un medidor temporal (crear, actualizar, leer y borrar) sin dejar residuos.
 
 **Pendiente:** prueba física de modo avión. El escenario está listo: consultar `MED-100001`, activar modo avión, volver a abrirlo.
 
@@ -225,6 +227,7 @@ Mapa entre cada requisito de la prueba, su criterio de aceptación, el código q
 - `src/services/syncService.ts`: cableado con SQLite y `fetch`.
 - `src/context/AppProvider.tsx`: listener de red, `AppState`, intervalo de 30 s, resumen y `sincronizarAhora`.
 - `src/components/ui/ConnectionStrip.tsx`: franja de conexión + pendientes en todas las pantallas.
+- `src/utils/contratoRemoto.ts`: cuerpo exacto de `POST /lecturas` y `PUT /medidores/:id`, sin campos locales.
 - `src/storage/lecturasRepository.ts`: `reclamarLecturaParaEnvio` evita que dos ejecuciones tomen la misma fila.
 
 **Evidencia**
@@ -238,6 +241,8 @@ Mapa entre cada requisito de la prueba, su criterio de aceptación, el código q
   - no reenvía una lectura ya enviada.
 - El mock permite simular fallos con `MOCK_FAIL_POSTS=3`.
 - Prueba manual del contrato: `POST /lecturas` responde 201; repetir el mismo `localId` responde 409; otro medidor en el mismo periodo responde 409.
+- `tests/contratoRemoto.test.ts`: el cuerpo de lectura contiene exactamente los nueve campos del seed y el medidor exactamente los ocho; no aparece `fotoUri`, `motivoInaccesible` ni `consumoCalculado`.
+- Petición real a MockAPI: crear medidor temporal, actualizarlo con `PUT`, crear lectura, consultarla por `localId` y borrar ambos. La limpieza dejó 10 medidores y 3 lecturas.
 
 **Pendiente:** el corte real de red a mitad de un POST. El código está preparado para el caso “llegó pero no volvió la respuesta”.
 
@@ -269,7 +274,20 @@ Mapa entre cada requisito de la prueba, su criterio de aceptación, el código q
 
 ## Requisito opcional · Subida de foto
 
-No implementado. La app guarda la foto en el teléfono, envía `fotoArchivo` (nombre) y `fotoDisponible` al mock, pero no sube el binario ni guarda una URL pública. Se documenta como limitación en el README. El modelo ya tiene `foto_url` para una extensión futura.
+No implementado. La app guarda la foto en el teléfono. El contrato de MockAPI definido por `mock-api/seed.json` no incluye campos de foto ni de evidencia, así que la foto, el motivo, la descripción del daño y el consumo calculado **no** se envían al servidor. Se documenta como limitación en el README. El modelo local conserva `foto_url` para una extensión futura.
+
+---
+
+## Criterios transversales
+
+| Tema | Implementación | Evidencia |
+|---|---|---|
+| Fechas con calendario | `CampoFecha.tsx`, `fechas.ts`, `ADR-013` | `tests/validacionesEntidades.test.ts`; selector nativo pendiente de dispositivo |
+| Rangos numéricos | `validacionesEntidades.ts` (`RANGO_LECTURA`, `RANGO_PROMEDIO`) | `tests/validacionesEntidades.test.ts` |
+| Longitudes de texto | `validacionesEntidades.ts`, `validators.ts`, contadores de `CampoTexto` | `tests/validacionesEntidades.test.ts`, `tests/validators.test.ts` |
+| Contrato exacto | `contratoRemoto.ts` | `tests/contratoRemoto.test.ts` |
+| Claymorphism | `constants/ui.ts`, componentes de `components/ui`, `ADR-014` | Recorrido visual; lint/typecheck/export |
+| Edición de medidor | `medidor/editar/[codigo].tsx`, `actualizarMedidor()` | `PUT` real contra MockAPI |
 
 ---
 
@@ -287,3 +305,6 @@ No implementado. La app guarda la foto en el teléfono, envía `fotoArchivo` (no
 | Envío automático | Quitar modo avión y ver el contador bajar |
 | Registro duplicado | Registrar dos veces el mismo medidor en el mismo mes; la segunda vez debe avisar. `MED-100008` demuestra además el 409 del servidor al sincronizar. |
 | Corrección | Abrir una pendiente, corregir; abrir una enviada y ver que no se puede |
+| Fecha y periodo | En el paso 1, abrir el calendario, elegir el mes anterior y ver el periodo del resumen |
+| Edición de medidor | Abrir `MED-100001`, Editar, cambiar dirección/fecha y guardar con conexión |
+| Identidad Claymorphism | Recorrer login, tabs, tarjetas, campos, alertas y tab bar flotante |

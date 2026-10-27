@@ -1,4 +1,4 @@
-import type { Lectura, LecturaRemota, Medidor } from '../types/models';
+import type { LecturaRemota, Medidor } from '../types/models';
 import {
   actualizarEvaluacionLectura,
   listarPendientesEnvio,
@@ -8,10 +8,10 @@ import {
   reclamarLecturaParaEnvio,
 } from '../storage/lecturasRepository';
 import { guardarMedidor, obtenerMedidor } from '../storage/medidoresRepository';
+import { cuerpoLecturaRemota } from '../utils/contratoRemoto';
 import { construirConsulta, solicitar } from './apiClient';
 import { parsearLecturaRemota } from './apiParsers';
 import { consultarMedidorRemoto } from './medidoresService';
-import { nombreArchivoFoto } from './fotoService';
 import {
   sincronizarPendientes,
   type ResultadoSincronizacion,
@@ -31,28 +31,6 @@ function medidorDesdeRemoto(codigo: string, medidor: Awaited<ReturnType<typeof c
     fechaUltimaLectura: medidor.fechaUltimaLectura,
     consumoPromedioMensual: medidor.consumoPromedioMensual,
     consultadoEn: new Date().toISOString(),
-  };
-}
-
-function cuerpoDeLectura(lectura: Lectura): Record<string, unknown> {
-  return {
-    localId: lectura.localId,
-    medidorId: lectura.medidorId,
-    codigoMedidor: lectura.codigoMedidor,
-    codigoTecnico: lectura.codigoTecnico,
-    fechaRegistro: lectura.fechaRegistro,
-    periodo: lectura.periodo,
-    tipoEstado: lectura.tipoEstado,
-    lecturaActual: lectura.lecturaActual,
-    ultimaLecturaReferencia: lectura.ultimaLecturaReferencia,
-    consumoCalculado: lectura.consumoCalculado,
-    consumoPromedioReferencia: lectura.consumoPromedioReferencia,
-    motivoInaccesible: lectura.motivoInaccesible,
-    descripcionDano: lectura.descripcionDano,
-    confirmacionRevision: lectura.confirmacionRevision,
-    estadoVerificacion: lectura.estadoVerificacion,
-    fotoArchivo: nombreArchivoFoto(lectura.fotoUri),
-    fotoDisponible: Boolean(lectura.fotoUri),
   };
 }
 
@@ -83,7 +61,7 @@ const dependencias: SyncDependencias = {
   enviarLectura: async (lectura) => {
     const respuesta = await solicitar<unknown>('/lecturas', {
       metodo: 'POST',
-      cuerpo: cuerpoDeLectura(lectura),
+      cuerpo: cuerpoLecturaRemota(lectura),
     });
     return parsearLecturaRemota(respuesta);
   },

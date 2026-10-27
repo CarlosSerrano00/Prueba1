@@ -1,3 +1,5 @@
+import { fechaLocalISO } from '../utils/fechas';
+
 export const TIPOS_ESTADO = ['normal', 'inaccesible', 'danado'] as const;
 export type TipoEstadoLectura = (typeof TIPOS_ESTADO)[number];
 
@@ -90,6 +92,12 @@ export interface LecturaRemota {
 
 export interface DatosFormulario {
   tipoEstado: TipoEstadoLectura;
+  /**
+   * Día calendario local (`YYYY-MM-DD`) en el que se realizó la lectura.
+   * Es opcional para poder leer borradores creados antes de incorporar el
+   * selector de fecha; las capturas nuevas siempre lo completan.
+   */
+  fechaRegistro?: string;
   lecturaActual: string;
   motivoInaccesible: string;
   descripcionDano: string;
@@ -135,6 +143,7 @@ export type FiltroLecturas = 'todas' | 'pendientes' | 'enviadas';
 
 export const DATOS_FORMULARIO_VACIOS: DatosFormulario = {
   tipoEstado: 'normal',
+  fechaRegistro: fechaLocalISO(),
   lecturaActual: '',
   motivoInaccesible: '',
   descripcionDano: '',

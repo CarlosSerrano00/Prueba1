@@ -86,6 +86,7 @@ async function prepararLectura(
 
   const preparada: Lectura = {
     ...lectura,
+    medidorId: medidor?.idRemoto ?? lectura.medidorId,
     ultimaLecturaReferencia: ultima,
     consumoCalculado: evaluacion.consumo,
     consumoPromedioReferencia: promedio,

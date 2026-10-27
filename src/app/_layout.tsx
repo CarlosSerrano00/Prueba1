@@ -88,6 +88,7 @@ function NavegacionRaiz() {
         <Stack.Screen name="login" options={{ animation: 'fade' }} />
         <Stack.Screen name="borrador" options={{ animation: 'fade' }} />
         <Stack.Screen name="medidor/[codigo]" />
+        <Stack.Screen name="medidor/editar/[codigo]" />
         <Stack.Screen name="registro/[codigo]" />
         <Stack.Screen name="lectura/[localId]" />
         <Stack.Screen name="+not-found" />

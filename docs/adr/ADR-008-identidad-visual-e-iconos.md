@@ -1,5 +1,7 @@
 # ADR-008: Construir una identidad visual propia con componentes nativos y `@expo/vector-icons`
 
+> **Nota de actualización (2026-10-27):** la decisión de mantener componentes propios e Ionicons sigue vigente, pero la paleta y el tratamiento de superficies de este ADR fueron reemplazados por [ADR-014](ADR-014-claymorphism.md). Este documento se conserva como registro histórico.
+
 ## Estado
 
 Aceptado.

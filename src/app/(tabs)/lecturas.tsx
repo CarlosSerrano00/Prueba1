@@ -14,7 +14,7 @@ import {
   SectionTitle,
   Texto,
 } from '@/components/ui';
-import { colors, radius, spacing } from '@/constants/ui';
+import { clayInset, clayShadowSoft, colors, radius, spacing } from '@/constants/ui';
 import { useApp } from '@/context/AppProvider';
 import { listarLecturasDelTecnico } from '@/services/lecturasService';
 import type { FiltroLecturas, Lectura } from '@/types/models';
@@ -198,25 +198,30 @@ const estilos = StyleSheet.create({
   filtros: {
     flexDirection: 'row',
     gap: spacing.xs,
-    backgroundColor: colors.surfaceAlt,
-    borderRadius: radius.md,
+    ...clayInset,
+    borderRadius: radius.lg,
     padding: spacing.xs,
   },
   filtro: {
     flex: 1,
-    minHeight: 42,
+    minHeight: 46,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 5,
-    borderRadius: radius.sm,
+    borderRadius: radius.md,
     paddingHorizontal: spacing.xs,
   },
   filtroActivo: {
     backgroundColor: colors.brand,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.45)',
+    borderBottomColor: 'rgba(40,43,120,0.40)',
+    ...clayShadowSoft,
   },
   filtroPresionado: {
-    opacity: 0.85,
+    opacity: 0.86,
+    transform: [{ scale: 0.985 }],
   },
   seccion: {
     gap: spacing.md,

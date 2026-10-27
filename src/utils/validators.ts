@@ -5,7 +5,9 @@ import type {
   TipoEstadoLectura,
 } from '../types/models';
 import { evaluarConsumo } from './consumo';
+import { hoyISO, sumarDias, validarFechaDia } from './fechas';
 import { formatearNumero } from './format';
+import { parsearNumeroRango, RANGO_LECTURA } from './validacionesEntidades';
 
 export const PATRON_CODIGO_MEDIDOR = /^MED-\d{6}$/;
 
@@ -17,6 +19,7 @@ export type ResultadoValidacion = {
 export type ErroresFormulario = Partial<
   Record<
     | 'codigo'
+    | 'fechaRegistro'
     | 'lecturaActual'
     | 'motivoInaccesible'
     | 'descripcionDano'
@@ -71,20 +74,21 @@ export function parsearLectura(texto: string): { ok: true; valor: number } | { o
     return { ok: false, mensaje: 'Ingresa la lectura del medidor.' };
   }
 
-  if (!/^\d{1,8}(?:[.,]\d{1,3})?$/.test(limpio)) {
+  const resultado = parsearNumeroRango(limpio, {
+    etiqueta: 'La lectura',
+    ...RANGO_LECTURA,
+    requerido: true,
+  });
+  if (!resultado.ok || resultado.valor == null) {
     return {
       ok: false,
       mensaje:
-        'La lectura debe ser un número mayor o igual a 0. Puedes usar hasta tres decimales, por ejemplo 1234,5.',
+        resultado.mensaje ??
+        'La lectura debe ser un número mayor o igual a 0. Puedes usar hasta tres decimales.',
     };
   }
 
-  const valor = Number(limpio.replace(',', '.'));
-  if (!Number.isFinite(valor) || valor < 0) {
-    return { ok: false, mensaje: 'La lectura debe ser un número válido mayor o igual a 0.' };
-  }
-
-  return { ok: true, valor };
+  return { ok: true, valor: resultado.valor };
 }
 
 export function validarMotivoInaccesible(texto: string): string | null {
@@ -115,6 +119,21 @@ export function validarDescripcionDano(texto: string): string | null {
   return null;
 }
 
+/**
+ * La fecha de campo no puede estar en el futuro ni ser anterior a un año.
+ * El selector de fecha ya limita el calendario; esta validación protege
+ * también los borradores antiguos o los datos que lleguen por otra vía.
+ */
+export function validarFechaRegistro(valor: string | null | undefined): string | null {
+  const resultado = validarFechaDia(valor, {
+    etiqueta: 'La fecha de registro',
+    requerida: true,
+    min: sumarDias(hoyISO(), -365),
+    max: hoyISO(),
+  });
+  return resultado.mensaje;
+}
+
 export function validarLecturaContraAnterior(
   lectura: number,
   ultimaLectura: number | null,
@@ -128,6 +147,14 @@ export function validarLecturaContraAnterior(
   return null;
 }
 
+export interface OpcionesValidacionRegistro {
+  /**
+   * Al corregir una lectura se conserva la fecha original, aunque sea
+   * antigua. La fecha solo se valida cuando el técnico puede cambiarla.
+   */
+  validarFecha?: boolean;
+}
+
 /**
  * Valida los datos del paso 1. No exige foto ni confirmación: esas reglas
  * dependen del paso 2 y se validan con `validarRegistroCompleto`.
@@ -135,6 +162,7 @@ export function validarLecturaContraAnterior(
 export function validarDatosRegistro(
   datos: DatosFormulario,
   medidor: Medidor,
+  opciones: OpcionesValidacionRegistro = {},
 ): {
   valido: boolean;
   errores: ErroresFormulario;
@@ -143,6 +171,11 @@ export function validarDatosRegistro(
 } {
   const errores: ErroresFormulario = {};
   let lectura: number | null = null;
+
+  if (opciones.validarFecha !== false && datos.fechaRegistro !== undefined) {
+    const errorFecha = validarFechaRegistro(datos.fechaRegistro);
+    if (errorFecha) errores.fechaRegistro = errorFecha;
+  }
 
   if (datos.tipoEstado === 'normal') {
     const resultado = parsearLectura(datos.lecturaActual);
@@ -202,8 +235,9 @@ export function validarRegistroCompleto(
   datos: DatosFormulario,
   medidor: Medidor,
   fotoUri: string | null,
+  opciones: OpcionesValidacionRegistro = {},
 ): EvaluacionRegistro {
-  const base = validarDatosRegistro(datos, medidor);
+  const base = validarDatosRegistro(datos, medidor, opciones);
   const errores: ErroresFormulario = { ...base.errores };
   const fotoObligatoria = fotoEsObligatoria(datos.tipoEstado, base.evaluacion);
   const requiereConfirmacion = base.evaluacion.anomalia;
@@ -234,6 +268,7 @@ export function primerError(errores: ErroresFormulario): string | null {
   const orden: (keyof ErroresFormulario)[] = [
     'codigo',
     'general',
+    'fechaRegistro',
     'lecturaActual',
     'motivoInaccesible',
     'descripcionDano',

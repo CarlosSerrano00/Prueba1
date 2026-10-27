@@ -8,6 +8,7 @@ import {
   obtenerBorrador,
   obtenerBorradorActivo,
 } from '../storage/borradoresRepository';
+import { fechaLocalISO } from '../utils/fechas';
 import { generarLocalId } from '../utils/id';
 import { eliminarFotoSiHuerfana } from './fotoService';
 
@@ -27,7 +28,10 @@ export function crearBorradorEnMemoria(parametros: ParametrosCrearBorrador): Bor
     codigoMedidor: parametros.codigoMedidor,
     codigoTecnico: parametros.codigoTecnico,
     paso: parametros.paso ?? 1,
-    datos: parametros.datos ?? { ...DATOS_FORMULARIO_VACIOS },
+    datos: parametros.datos ?? {
+      ...DATOS_FORMULARIO_VACIOS,
+      fechaRegistro: fechaLocalISO(),
+    },
     fotoUri: parametros.fotoUri ?? null,
     lecturaLocalId: parametros.lecturaLocalId ?? null,
     creadoEn: ahora,
