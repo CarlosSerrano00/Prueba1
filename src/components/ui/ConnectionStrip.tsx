@@ -40,7 +40,7 @@ export function ConnectionStrip() {
           color={pendientes > 0 ? colors.warning : colors.success}
         />
         <Texto variante="caption" color={colors.textMuted} style={estilos.pendientes}>
-          {pendientes === 0 ? 'Todo enviado' : `${pendientes} por enviar`}
+          {pendientes === 0 ? 'Sin pendientes' : `${pendientes} por enviar`}
         </Texto>
 
         {revision > 0 ? <Badge texto={`${revision} por revisar`} tono="peligro" /> : null}
