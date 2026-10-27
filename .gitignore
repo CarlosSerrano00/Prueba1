@@ -51,3 +51,7 @@ example
 # Datos locales del servidor de simulacion
 mock-api/db.json
 
+# Material de la prueba (no forma parte del código fuente)
+/*.pdf
+/*.docx
+
