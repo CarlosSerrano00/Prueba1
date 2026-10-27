@@ -44,7 +44,7 @@ Componentes reutilizables:
 - `AppScreen` (fondo, safe area, cabecera, estado de conexión);
 - `AppHeader` (título, subtítulo, botón atrás, acción);
 - `ConnectionStrip` (conexión + pendientes + sincronización);
-- `Card`, `SectionTitle`, `InfoRow`, `Badge`, `Button`, `TextField`, `ChoiceCard`, `EmptyState`, `MeterCard`, `LecturaCard`, `FotoMedidor`.
+- `Card`, `SectionTitle`, `InfoRow`, `Badge`, `Boton`, `CampoTexto`, `ChoiceCard`, `EmptyState`, `MeterCard`, `LecturaCard`, `FotoMedidor`.
 
 Se usa `@expo/vector-icons` (Ionicons) para una iconografía coherente. No se usan degradados fuertes ni animaciones decorativas. Los estados no se comunican solo con color: siempre hay texto e icono.
 

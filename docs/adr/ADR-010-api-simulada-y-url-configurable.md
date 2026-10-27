@@ -56,6 +56,8 @@ La app obtiene la URL en este orden:
 
 La URL se puede cambiar en tiempo de ejecución desde Perfil, lo que permite usar el APK con un MockAPI o con la IP LAN de la computadora sin recompilar. Se valida que sea `http://` o `https://` y se prueba con una petición real.
 
+Como Android 9+ bloquea el tráfico HTTP sin cifrar, se incluye el plugin local `plugins/withCleartextTraffic.js`, que agrega `android:usesCleartextTraffic="true"` al manifiesto. No agrega una dependencia: usa `expo/config-plugins`, que ya viene con Expo. En iOS se declara `NSAllowsLocalNetworking` para permitir la red local durante el desarrollo. Esta configuración es necesaria para la demostración con el servidor local; si se usa un MockAPI con HTTPS, el plugin puede eliminarse.
+
 La app funciona igual contra MockAPI: los servicios usan los mismos endpoints y campos. La diferencia es que el servidor local devuelve 409 en duplicados, mientras que MockAPI puede aceptar duplicados si la comprobación previa falla. Esa limitación se documenta y no se oculta.
 
 No se incluyen datos de medidores dentro de las pantallas ni se simula un envío exitoso. Si la API no responde, la lectura queda pendiente y se muestra el error.
@@ -71,13 +73,14 @@ No se incluyen datos de medidores dentro de las pantallas ni se simula un envío
 
 ## Verificación
 
-1. Revisar `mock-api/server.mjs`, `mock-api/seed.json` y `src/services/apiConfig.ts`.
+1. Revisar `mock-api/server.mjs`, `mock-api/seed.json`, `src/services/apiConfig.ts` y `plugins/withCleartextTraffic.js`.
 2. Ejecutar `npm run mock` y abrir `http://localhost:4000/health`.
 3. Consultar `GET /medidores?codigo=MED-100001` y comprobar los siete datos.
 4. Hacer dos `POST /lecturas` con el mismo `localId` y comprobar que el segundo devuelve 409.
 5. Hacer dos `POST` con el mismo medidor y periodo y comprobar que el segundo devuelve 409.
 6. En la app, configurar la URL desde Perfil, probar la conexión y consultar un medidor.
 7. Revisar que ninguna pantalla contiene medidores hardcodeados ni marca un envío como exitoso sin respuesta del servidor.
+8. Verificar que `app.json` incluye `./plugins/withCleartextTraffic` y que el APK puede consultar el servidor HTTP local.
 
 ## Uso de IA
 

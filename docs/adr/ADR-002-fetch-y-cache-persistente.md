@@ -45,7 +45,7 @@ Se usa `fetch` nativo dentro de `src/services/apiClient.ts`, con:
 - una clase `ApiError` con tipo `red`, `timeout`, `http`, `respuesta` o `configuracion`;
 - lectura y validación manual de la respuesta antes de devolverla a la aplicación.
 
-La caché de medidores es una tabla SQLite (`medidores_cache`). La estrategia es *cache-first*: si el medidor ya está guardado, se muestra de inmediato y se indica la fecha de consulta; si hay red, se intenta actualizar en segundo plano. Si la consulta remota falla y existe caché, se conserva la caché y se muestra una advertencia, no un error que borre la pantalla.
+La caché de medidores es una tabla SQLite (`medidores_cache`). La estrategia es *cache-first por jornada*: si el medidor ya fue consultado hoy, se muestra de inmediato desde SQLite con la fecha de consulta y un aviso informativo; si la copia es de un día anterior, se intenta actualizar desde la oficina. El gesto de deslizar hacia abajo fuerza una nueva consulta remota (`forzarRed`). Sin conexión se devuelve la copia local; si la consulta remota falla y existe caché, se conserva la caché y se muestra una advertencia, no un error que borre la pantalla.
 
 No se instala Axios ni TanStack Query.
 
