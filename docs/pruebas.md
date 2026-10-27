@@ -104,9 +104,16 @@ Ejecutadas en este entorno:
 | `npm run lint` | Sin errores ni advertencias |
 | `npx expo-doctor` | 21/21 comprobaciones correctas |
 | `npx expo export --platform android` | Bundle de producción generado (Hermes, ~3.5 MB) |
-| `npx eas-cli build -p android --profile preview` | Build en la nube (ver README para el enlace y estado final) |
+| `npx eas-cli build -p android --profile preview` | Build `2e28ec41-d644-4582-84cc-13d0c9cda2c4` finalizado con estado `FINISHED` |
 
 El `expo export` confirma que el bundle de JavaScript compila para Android. **No** confirma que la app se ejecute correctamente en un dispositivo.
+
+### Evidencia del APK
+
+- Build: <https://expo.dev/accounts/carlosserrano00/projects/aquaruta-lecturas/builds/2e28ec41-d644-4582-84cc-13d0c9cda2c4>
+- APK descargado: 112.947.026 bytes, SHA-256 `EA156A9E0F5848D73B1F2CE11E685FEDF4ED7EF151A0F681DF7A38EAE6666EE5`.
+- Se comprobó que el archivo es un ZIP/APK legible y que contiene `AndroidManifest.xml`, `resources.arsc`, cuatro archivos `classes*.dex` y librerías nativas para `arm64-v8a`, `armeabi-v7a`, `x86` y `x86_64`.
+- **No verificado:** instalación con `adb`, apertura de la app, permisos de cámara, modo avión y recorrido manual. En este entorno no hay Android SDK ni emulador.
 
 ## 3. Pruebas del sistema de oficina simulado
 
