@@ -7,6 +7,7 @@ import {
   obtenerLectura,
   obtenerLecturaPorMedidorPeriodo,
   obtenerResumenLecturas,
+  reencolarLecturaParaReintento,
 } from '../storage/lecturasRepository';
 import {
   fechaHoraDesdeDia,
@@ -204,6 +205,10 @@ export async function corregirLectura(
 
 export async function obtenerLecturaPorId(localId: string): Promise<Lectura | null> {
   return obtenerLectura(localId);
+}
+
+export async function prepararReintentoLectura(localId: string): Promise<void> {
+  await reencolarLecturaParaReintento(localId);
 }
 
 export async function obtenerLecturaDelPeriodo(

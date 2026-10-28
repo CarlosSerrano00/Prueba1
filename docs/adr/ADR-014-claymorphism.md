@@ -67,6 +67,4 @@ La accesibilidad se mantiene por encima del estilo:
 6. Confirmar que el tab bar flotante no tapa el último botón de cada pantalla.
 7. Ejecutar `npm run lint`, `npm run typecheck` y `npx expo export --platform android`.
 
-## Uso de IA
 
-La IA propuso Claymorphism frente a flat, glassmorphism y neumorphism. Se aceptó porque permite una identidad propia sin sacrificar la legibilidad de una herramienta de campo. También se decidió no usar desenfoques ni transparencias fuertes. El estudiante debe poder explicar los tokens, por qué los estados no dependen solo del color y cómo se mantiene la accesibilidad.

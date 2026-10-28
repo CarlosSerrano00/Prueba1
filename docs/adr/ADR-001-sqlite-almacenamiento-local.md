@@ -66,6 +66,4 @@ Las operaciones que modifican varias filas (por ejemplo, marcar una lectura como
 4. Ejecutar `npm test`: las pruebas de reglas de duplicado y de periodo deben pasar. La restricción SQLite se verifica además con el escenario manual de R10, porque `expo-sqlite` no corre en el entorno de pruebas de Node.
 5. Abrir el inspector de SQLite de Expo (`Shift + M` en la terminal) y comprobar las tablas y la fila de sesión.
 
-## Uso de IA
 
-La IA propuso SQLite después de analizar el enunciado. Se comparó con AsyncStorage y con archivos JSON. Se aceptó SQLite porque la rúbrica exige evitar duplicados y consultar pendientes, y esas reglas se pueden hacer cumplir en la base, no solo ocultando botones. Se descartó AsyncStorage para las lecturas, aunque se reconoce que sería suficiente para la sesión. No hubo una conversación previa del estudiante sobre esta decisión; el estudiante debe revisar este ADR y poder explicar por qué la restricción de unicidad importa antes de la defensa.

@@ -52,6 +52,17 @@ interface LecturaPreparada {
   motivoRevision: string | null;
 }
 
+async function buscarLecturaOpcional(
+  buscar: () => Promise<LecturaRemota | null>,
+): Promise<LecturaRemota | null> {
+  try {
+    return await buscar();
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return null;
+    throw error;
+  }
+}
+
 async function prepararLectura(
   lectura: Lectura,
   deps: SyncDependencias,
@@ -209,7 +220,9 @@ export async function sincronizarPendientes(
     }
 
     try {
-      const existente = await deps.buscarLecturaRemota(lectura.localId);
+      const existente = await buscarLecturaOpcional(() =>
+        deps.buscarLecturaRemota(lectura.localId),
+      );
       if (existente) {
         await deps.marcarEnviada(lectura.localId, existente.id, deps.ahora());
         resultado.enviadas += 1;
@@ -220,9 +233,8 @@ export async function sincronizarPendientes(
       // consulta el periodo para no crear un duplicado que el servidor
       // aceptaría sin protestar. Si el registro encontrado es este mismo
       // envío, se marca como enviado; si es de otro dispositivo, se revisa.
-      const delPeriodo = await deps.buscarLecturaRemotaPorPeriodo(
-        lectura.codigoMedidor,
-        lectura.periodo,
+      const delPeriodo = await buscarLecturaOpcional(() =>
+        deps.buscarLecturaRemotaPorPeriodo(lectura.codigoMedidor, lectura.periodo),
       );
       if (delPeriodo) {
         if (delPeriodo.localId === lectura.localId) {

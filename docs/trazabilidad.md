@@ -14,7 +14,7 @@ Mapa entre cada requisito de la prueba, su criterio de aceptación, el código q
 |---|---|---|---|---|
 | R1 | 1 | `sesionService.ts`, `sesionRepository.ts`, `_layout.tsx` | Recorrido manual | 🧪 |
 | R2 | 1 | `validators.ts`, `buscar.tsx`, `medidoresService.ts` | `validators.test.ts` | ✅ |
-| R3 | 2 | `medidoresService.ts`, `medidoresRepository.ts`, `medidor/[codigo].tsx` | `medidoresService` + MockAPI | ✅ |
+| R3 | 2 | `medidoresService.ts`, `medidoresRepository.ts`, `medidor/[codigo].tsx` | `medidoresService` + MockAPI + recorrido visual | ✅/🧪 |
 | R4 | 1 | `registro/[codigo].tsx`, `lecturasService.ts`, `syncEngine.ts` | `syncEngine.test.ts` | ✅ |
 | R5 | 2 | `validators.ts`, `validacionesEntidades.ts`, paso 1 del registro | `validators.test.ts`, `validacionesEntidades.test.ts` | ✅ |
 | R6 | 1 | `consumo.ts`, `verificacion.ts`, paso 2 | `consumo.test.ts` | ✅ |
@@ -237,10 +237,12 @@ Mapa entre cada requisito de la prueba, su criterio de aceptación, el código q
   - no duplica si el POST se guardó pero la respuesta se perdió (busca por `localId`);
   - reintenta si la red falla antes de llegar al servidor;
   - recupera un 409 de `localId` duplicado sin marcarlo como error definitivo;
+  - no envía si otra lectura del mismo medidor y periodo ya existe en MockAPI;
+  - marca enviada si la lectura del periodo es el mismo `localId`;
   - mantiene pendiente ante un 500;
   - no reenvía una lectura ya enviada.
 - El mock permite simular fallos con `MOCK_FAIL_POSTS=3`.
-- Prueba manual del contrato: `POST /lecturas` responde 201; repetir el mismo `localId` responde 409; otro medidor en el mismo periodo responde 409.
+- Con el mock local, `POST /lecturas` responde 201; repetir el mismo `localId` responde 409 y otro medidor en el mismo periodo también responde 409. MockAPI no impone esas reglas; la app consulta antes de enviar.
 - `tests/contratoRemoto.test.ts`: el cuerpo de lectura contiene exactamente los nueve campos del seed y el medidor exactamente los ocho; no aparece `fotoUri`, `motivoInaccesible` ni `consumoCalculado`.
 - Petición real a MockAPI: crear medidor temporal, actualizarlo con `PUT`, crear lectura, consultarla por `localId` y borrar ambos. La limpieza dejó 10 medidores y 3 lecturas.
 
@@ -299,7 +301,7 @@ No implementado. La app guarda la foto en el teléfono. El contrato de MockAPI d
 | Lo que pedirá el docente | Dónde mostrarlo |
 |---|---|
 | Código inválido | Buscar → `MED-12` → error sin consulta |
-| Siete datos y caché | `MED-100001`, modo avión, reabrir |
+| Datos de la ficha y caché | `MED-100001`, modo avión, reabrir |
 | Tres estados | Registro → cambiar entre normal/inaccesible/dañado |
 | Consumo y anomalía | `MED-100001`, lectura 161 |
 | Foto obligatoria | Anomalía o dañado; intentar continuar sin foto |

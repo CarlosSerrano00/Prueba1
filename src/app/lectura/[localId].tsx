@@ -25,7 +25,10 @@ import {
   etiquetaTipoEstado,
 } from '@/utils/etiquetas';
 import type { TonoBadge } from '@/components/ui';
-import { obtenerLecturaPorId } from '@/services/lecturasService';
+import {
+  obtenerLecturaPorId,
+  prepararReintentoLectura,
+} from '@/services/lecturasService';
 import type { Lectura } from '@/types/models';
 import { formatearFechaHora, formatearMetros } from '@/utils/format';
 import { nombrePeriodo } from '@/utils/periodo';
@@ -89,6 +92,9 @@ export default function LecturaScreen() {
   }
 
   async function reintentarEnvio() {
+    if (lectura?.estadoEnvio === 'requiere_revision') {
+      await prepararReintentoLectura(lectura.localId);
+    }
     await sincronizarAhora();
     await cargar();
   }

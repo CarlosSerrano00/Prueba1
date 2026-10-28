@@ -57,7 +57,3 @@ Los componentes, servicios, repositorios y utilidades viven fuera de `src/app` p
 4. Cerrar la app en el paso 2 y abrirla; debe aparecer la pantalla de borrador antes de restaurar el formulario.
 5. Revisar que `package.json` no tiene una instalación manual de `@react-navigation/*` distinta de las dependencias de Expo Router.
 6. Verificar que los deep links `aquaruta://medidor/MED-100001` abren la pantalla correcta en desarrollo.
-
-## Uso de IA
-
-La IA recomendó mantener Expo Router porque ya viene en la plantilla y porque las rutas con parámetros permiten dirigir al técnico al recurso pendiente. Se descartó React Navigation manual y una única pantalla con condicionales. Se aceptó la advertencia de no guardar el formulario en los parámetros de ruta: los parámetros se pierden al cerrar la app y no resuelven R8. El estudiante debe poder explicar esta diferencia.

@@ -70,6 +70,3 @@ La app se fija en modo claro (`userInterfaceStyle: "light"`), porque el contrast
 5. Revisar que los errores de formulario tienen texto, no solo borde rojo.
 6. Verificar que las tarjetas de medidor muestran los datos de la ficha sin amontonarlos.
 
-## Uso de IA
-
-La IA propuso una identidad propia con componentes nativos y descartó NativeWind y React Native Paper para evitar una apariencia genérica y dependencias grandes. Se aceptó. Se decidió usar `@expo/vector-icons` porque la plantilla no trae un set de iconos multiplataforma y porque los iconos ayudan a comunicar estados en campo. El estudiante debe poder justificar la paleta y señalar dónde se usa cada color de estado.

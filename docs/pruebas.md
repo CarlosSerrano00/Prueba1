@@ -131,7 +131,7 @@ Ejecutadas en este entorno:
 | `npm run typecheck` | Sin errores |
 | `npm run lint` | Sin errores ni advertencias |
 | `npx expo-doctor` | 21/21 comprobaciones correctas |
-| `npx expo export --platform android` | Bundle de producción generado (Hermes, ~3.5 MB) |
+| `npx expo export --platform android` | Bundle de producción generado (Hermes, ~3.6 MB) |
 | `npx eas-cli build -p android --profile preview` | Build `f02b8285-fbca-48dd-b9b2-b4a8dfce2b36` finalizado con estado `FINISHED` |
 
 El `expo export` confirma que el bundle de JavaScript compila para Android. **No** confirma que la app se ejecute correctamente en un dispositivo.
@@ -215,7 +215,7 @@ Invoke-RestMethod -Method Post -Uri http://localhost:4000/lecturas `
 
 ## 4. Matriz de pruebas manuales
 
-Estas pruebas están diseñadas para ejecutarse con el APK o en Expo Go. La columna **Estado** indica si se ejecutó en este entorno.
+Estas pruebas están diseñadas para ejecutarse con el APK o un development build; el selector nativo de fechas no está incluido en Expo Go. La columna **Estado** indica si se ejecutó en este entorno.
 
 ### Preparación
 

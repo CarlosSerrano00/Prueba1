@@ -33,14 +33,14 @@ Proyecto de la prueba técnica de la **ESFOT · Escuela Politécnica Nacional** 
 |---|---|---|
 | **R1** Sesión persistente | Sesión en SQLite; se restaura al abrir; cerrar sesión la borra y vuelve al login. | `src/services/sesionService.ts`, `src/app/_layout.tsx` |
 | **R2** Código `MED-` + 6 dígitos | Validación antes de cualquier consulta o navegación. El buscador no llama a la red con un código inválido. | `src/utils/validators.ts`, `src/app/(tabs)/buscar.tsx` |
-| **R3** Datos del medidor y caché | 7 campos en `medidores_cache`; consulta remota con red y copia local sin red. Si el medidor ya se consultó hoy, se entrega desde SQLite. Deslizar hacia abajo fuerza la actualización. | `src/services/medidoresService.ts`, `src/storage/medidoresRepository.ts` |
+| **R3** Datos del medidor y caché | Los datos de la ficha en `medidores_cache`; consulta remota con red y copia local sin red. Si el medidor ya se consultó hoy, se entrega desde SQLite. Deslizar hacia abajo fuerza la actualización. | `src/services/medidoresService.ts`, `src/storage/medidoresRepository.ts` |
 | **R4** Registro sin señal | La lectura se crea en SQLite con `estadoEnvio = pendiente`; al recuperar la conexión se compara con la lectura anterior del servidor. | `src/app/registro/[codigo].tsx`, `src/services/syncEngine.ts` |
 | **R5** Tres estados | Normal exige lectura; inaccesible exige motivo y no admite lectura; dañado exige descripción y permite lectura vacía. | `src/utils/validators.ts` |
 | **R6** Consumo y anomalía | Consumo = actual − anterior. Si supera `3 × promedio`, se advierte y se exige confirmación + foto. Sin promedio o sin lectura anterior queda pendiente de verificar, no se inventa un consumo. | `src/utils/consumo.ts`, `src/utils/verificacion.ts` |
 | **R7** Foto obligatoria y persistente | Obligatoria con anomalía o medidor dañado; opcional en los demás casos. Se copia a `Paths.document/fotos-lecturas`. Si se niega el permiso, se explica y se permite continuar cuando la foto no es obligatoria. | `src/services/fotoService.ts`, `src/components/ui/FotoMedidor.tsx` |
 | **R8** Borrador recuperable | Un borrador activo por técnico, guardado con debounce de 400 ms y paso actual. Al reabrir, se ofrece continuar o descartar. | `src/services/borradoresService.ts`, `src/app/borrador.tsx` |
 | **R9** Envío automático e idempotente | Se sincroniza al recuperar conexión, al volver la app al frente y cada 30 s. Antes de enviar se busca el `localId`; solo se marca enviada con respuesta 2xx o con la lectura ya existente. | `src/services/syncEngine.ts`, `src/context/AppProvider.tsx` |
-| **R10** Corrección y duplicados | Pendientes y `requiere_revision` se pueden corregir; enviadas no. Restricción `UNIQUE(codigo_medidor, periodo)` en SQLite y comprobación del periodo en el servidor antes de enviar. El mock local además devuelve 409; MockAPI no impone unicidad. | `src/services/lecturasService.ts`, `src/storage/db.ts`, `src/services/syncEngine.ts` |
+| **R10** Corrección y duplicados | Pendientes y `requiere_revision` se pueden corregir; enviadas no. Restricción `UNIQUE(codigo_medidor, periodo)` en SQLite y comprobación remota por medidor/periodo antes de enviar. El mock local además devuelve 409; MockAPI no impone unicidad. | `src/services/lecturasService.ts`, `src/storage/db.ts`, `src/services/syncEngine.ts` |
 
 La trazabilidad completa, con criterios de aceptación y evidencia, está en [`docs/trazabilidad.md`](docs/trazabilidad.md).
 
@@ -59,7 +59,7 @@ La trazabilidad completa, con criterios de aceptación y evidencia, está en [`d
 ### Requisitos
 
 - Node.js 20 o superior y npm.
-- Para Android: emulador con Android Studio, o un teléfono con Expo Go / el APK.
+- Para Android: emulador con Android Studio, o un teléfono con un development build / el APK. El selector nativo de fechas no está incluido en Expo Go.
 - No se necesita Android SDK si se usa EAS Build para generar el APK.
 
 ### 1. Instalar dependencias
@@ -128,7 +128,7 @@ La clave no se guarda en SQLite; solo se valida contra los datos quemados de `sr
 |---|---|
 | `MED-100001` | Última lectura 100, promedio 20: una lectura de 160 da consumo 60 (sin anomalía); 161 supera el triple. |
 | `MED-100002` | Valores decimales (540.5). |
-| `MED-100008` | Ya tiene lectura de `2026-10` en el servidor: sirve para demostrar el rechazo de duplicado mensual. |
+| `MED-100008` | Ya tiene lectura de `2026-10` en MockAPI: sirve para demostrar la detección de duplicado mensual antes del envío. |
 | `MED-100009` | Sin consumo promedio: la evaluación queda pendiente de verificar. |
 | `MED-100010` | Sin lectura anterior: no se puede calcular consumo. |
 | `MED-100007` | Medidor suspendido; la lectura inaccesible está permitida. |

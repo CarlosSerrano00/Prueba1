@@ -63,6 +63,4 @@ La app no sube fotos a un servicio externo. `fotoUrl` queda en el modelo para un
 5. Guardar una lectura sin conexión y reiniciar el teléfono; la foto debe seguir visible.
 6. Revisar que `foto_uri` está en la fila de SQLite y que no hay base64 en la base.
 
-## Uso de IA
 
-La IA recomendó `expo-image-picker` + `expo-file-system` y descartó `expo-camera` porque la app solo necesita una captura de respaldo, no una experiencia de cámara embebida. También descartó guardar base64 en SQLite. Se aceptó la recomendación y se añadió la copia explícita a documentos, porque la URI del picker es temporal. El estudiante debe poder explicar la diferencia entre `Paths.cache` y `Paths.document`, y por qué la foto no se guarda como texto en la base.

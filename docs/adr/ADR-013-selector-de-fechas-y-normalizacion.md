@@ -65,6 +65,4 @@ Las reglas de fecha viven en `src/utils/fechas.ts`:
 6. Ejecutar `npm test`: las pruebas de fechas, rangos y coherencia deben pasar.
 7. Revisar que `app.json` incluye el plugin `@react-native-community/datetimepicker`.
 
-## Uso de IA
 
-La IA propuso el selector nativo y descartó un calendario propio o un campo de texto como solución principal. También propuso distinguir día calendario de instante ISO para evitar el error clásico de un día menos en Quito. El estudiante debe poder explicar por qué `new Date('2026-09-20')` no se usa directamente para los campos de día y por qué la corrección conserva la fecha original.

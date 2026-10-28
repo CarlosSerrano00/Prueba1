@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import type { ReactNode } from 'react';
+import { Children, Fragment, isValidElement, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { clayShadowSoft, colors, radius, spacing } from '../../constants/ui';
@@ -51,6 +51,43 @@ const paletas: Record<
   },
 };
 
+function renderizarContenido(children: ReactNode, color: string): ReactNode[] {
+  const contenido: ReactNode[] = [];
+  let texto = '';
+
+  function agregarTexto() {
+    if (!texto) return;
+    contenido.push(
+      <Texto
+        key={`texto-${contenido.length}`}
+        variante="caption"
+        color={color}
+        style={estilos.texto}
+      >
+        {texto}
+      </Texto>,
+    );
+    texto = '';
+  }
+
+  Children.toArray(children).forEach((child) => {
+    if (typeof child === 'string' || typeof child === 'number') {
+      texto += child;
+      return;
+    }
+
+    agregarTexto();
+    if (isValidElement<{ children?: ReactNode }>(child) && child.type === Fragment) {
+      contenido.push(...renderizarContenido(child.props.children, color));
+    } else if (child != null && typeof child !== 'boolean') {
+      contenido.push(child);
+    }
+  });
+
+  agregarTexto();
+  return contenido;
+}
+
 export function Alerta({
   titulo,
   children,
@@ -69,13 +106,7 @@ export function Alerta({
               {titulo}
             </Texto>
           ) : null}
-          {typeof children === 'string' ? (
-            <Texto variante="caption" color={paleta.color} style={estilos.texto}>
-              {children}
-            </Texto>
-          ) : (
-            children
-          )}
+          {renderizarContenido(children, paleta.color)}
           {accion ? <View style={estilos.accion}>{accion}</View> : null}
         </View>
       </View>

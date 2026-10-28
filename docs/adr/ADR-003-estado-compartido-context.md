@@ -29,7 +29,7 @@ Si cada pantalla consultara SQLite por su cuenta, el indicador de pendientes pod
 
 | Alternativa | Ventajas en este proyecto | Desventajas en este proyecto |
 |---|---|---|
-| React Context + hooks, con SQLite como fuente de verdad | Ya viene con React; cero dependencias; el estado global es pequeño; se puede envolver la app una sola vez; fácil de explicar en la defensa. | Cada cambio en el valor del contexto vuelve a renderizar a los consumidores; hay que memorizar el valor y separar responsabilidades para no crear un "contexto gigante". |
+| React Context + hooks, con SQLite como fuente de verdad | Ya viene con React; cero dependencias; el estado global es pequeño; se puede envolver la app una sola vez | Cada cambio en el valor del contexto vuelve a renderizar a los consumidores; hay que memorizar el valor y separar responsabilidades para no crear un "contexto gigante". |
 | Zustand | Selectores, menos renderizados, API pequeña y persistencia opcional. | Es una dependencia adicional; su persistencia típica usa AsyncStorage, que no es la fuente de verdad de las lecturas. Para este tamaño, el beneficio no compensa. |
 | Redux Toolkit | Estructura conocida, DevTools, middlewares. | Demasiado ceremonial para una sesión, un contador y un booleano de conexión. Añade dependencias y archivos que no aportan a los requisitos. |
 | Pasar todo por props y parámetros de ruta | Sin estado global; flujo explícito. | El indicador de conexión y pendientes debe verse en todas las pantallas; pasarlo por props en cada ruta duplica código y se rompe al navegar. Los parámetros de ruta no sobreviven al cierre de la app. |
@@ -65,6 +65,4 @@ No se instala Zustand ni Redux.
 4. Cerrar sesión y comprobar que el contexto de sesión se limpia y que la app vuelve al login.
 5. Cerrar y abrir la app: la sesión se recupera desde SQLite, no desde memoria.
 
-## Uso de IA
 
-La IA propuso Context porque el estado compartido es pequeño y porque SQLite ya resuelve la persistencia. Se descartaron Zustand y Redux por ser dependencias sin una ventaja proporcional. Se aceptó la recomendación, pero se dejó fuera del contexto el formulario de captura para no convertir el proveedor en un contenedor de toda la aplicación. El estudiante debe poder explicar qué información vive en el contexto y cuál vive en SQLite.

@@ -68,6 +68,3 @@ No se incluyen datos de medidores dentro de las pantallas ni se simula un envío
 7. Abrir la app, consultar un medidor y sincronizar una lectura.
 8. Opcional: `npm run mock:reset`, cambiar la URL en Perfil y repetir el flujo contra el servidor local.
 
-## Uso de IA
-
-La IA propuso inicialmente un servidor local porque no había una URL de MockAPI. Cuando el estudiante entregó la URL, se verificó que `/recursos` no era la API, se sembró la raíz correcta y se mantuvo el mock local como respaldo. El estudiante debe poder explicar por qué la raíz es la URL correcta, por qué `/recursos` da 404 y por qué la idempotencia no puede depender de MockAPI.

@@ -299,12 +299,12 @@ Los parsers (`apiParsers.ts`) validan campo por campo antes de escribir en cach�
 | Validación | Funciones puras reutilizadas | [ADR-004](adr/ADR-004-validacion-centralizada.md) |
 | Formularios | Controlados + borrador persistente | [ADR-005](adr/ADR-005-formularios-controlados-y-borrador.md) |
 | Fotos | Copia a `Paths.document` | [ADR-006](adr/ADR-006-fotografias-persistentes.md) |
-| Sincronización | Idempotencia por `localId` | [ADR-007](adr/ADR-007-sincronizacion-idempotente.md) |
+| Sincronización | Idempotencia por `localId` + periodo | [ADR-007](adr/ADR-007-sincronizacion-idempotente.md) |
 | UI | Componentes propios + iconos | [ADR-008](adr/ADR-008-identidad-visual-e-iconos.md) |
 | Pruebas | `node:test` + `tsx` | [ADR-009](adr/ADR-009-pruebas-automatizadas.md) |
 | API | MockAPI + URL configurable | [ADR-010](adr/ADR-010-api-simulada-y-url-configurable.md) |
 | Navegación | Expo Router | [ADR-011](adr/ADR-011-navegacion-expo-router.md) |
-| Duplicados | Periodo `YYYY-MM` + `UNIQUE` | [ADR-012](adr/ADR-012-periodo-mensual-y-duplicados.md) |
+| Duplicados | Periodo `YYYY-MM` + `UNIQUE` + consulta remota | [ADR-012](adr/ADR-012-periodo-mensual-y-duplicados.md) |
 | Fechas | Selector nativo + normalización de día | [ADR-013](adr/ADR-013-selector-de-fechas-y-normalizacion.md) |
 | Diseño | Claymorphism | [ADR-014](adr/ADR-014-claymorphism.md) |
 

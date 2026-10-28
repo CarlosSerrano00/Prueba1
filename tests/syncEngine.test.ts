@@ -227,6 +227,24 @@ describe('R9 - sincronización idempotente', () => {
     assert.equal(escenario.lectura.fechaEnvio, '2026-10-26T12:30:00.000Z');
   });
 
+  it('continúa el envío cuando las búsquedas de idempotencia responden 404', async () => {
+    const escenario = crearEscenario();
+    escenario.deps.buscarLecturaRemota = async () => {
+      throw new ApiError('http', 'No encontrado.', 404);
+    };
+    escenario.deps.buscarLecturaRemotaPorPeriodo = async () => {
+      throw new ApiError('http', 'No encontrado.', 404);
+    };
+
+    const resultado = await ejecutar(escenario);
+
+    assert.equal(resultado.enviadas, 1);
+    assert.equal(resultado.revision, 0);
+    assert.equal(resultado.errores, 0);
+    assert.equal(escenario.posts, 1);
+    assert.equal(escenario.lectura.estadoEnvio, 'enviado');
+  });
+
   it('no duplica si el POST se guardó pero la respuesta se perdió', async () => {
     const escenario = crearEscenario({ fallarPostDespues: true });
 

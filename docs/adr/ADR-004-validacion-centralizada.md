@@ -70,6 +70,4 @@ No se instala Zod.
 4. Revisar que una respuesta de API sin `codigo` o con `ultimaLectura` de tipo incorrecto no se guarda en caché.
 5. Confirmar que un `UPDATE` sobre una lectura enviada devuelve cero cambios y que el servicio lanza un error.
 
-## Uso de IA
 
-La IA propuso funciones puras y descartó Zod para no agregar una dependencia por un conjunto pequeño de reglas que, además, incluye condiciones que un esquema de datos no puede resolver (unicidad mensual, foto obligatoria, lectura enviada). Se aceptó la recomendación. También se aceptó separar los parsers de respuesta para no confundir "dato remoto inválido" con "formulario inválido". El estudiante debe poder explicar por qué la validación se repite en el servicio aunque la pantalla ya muestre el error.

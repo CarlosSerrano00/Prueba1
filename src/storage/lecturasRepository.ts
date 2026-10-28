@@ -243,6 +243,20 @@ export async function marcarLecturaPendiente(localId: string, mensaje: string): 
   );
 }
 
+export async function reencolarLecturaParaReintento(localId: string): Promise<boolean> {
+  const db = await getDb();
+  const resultado = await db.runAsync(
+    `UPDATE lecturas
+     SET estado_envio = 'pendiente',
+         mensaje_error = NULL,
+         actualizado_en = ?
+     WHERE local_id = ? AND estado_envio = 'requiere_revision'`,
+    new Date().toISOString(),
+    localId,
+  );
+  return resultado.changes > 0;
+}
+
 export async function marcarLecturaRequiereRevision(
   localId: string,
   mensaje: string,

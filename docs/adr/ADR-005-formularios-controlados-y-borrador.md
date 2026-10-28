@@ -74,6 +74,4 @@ No se instala React Hook Form ni Formik.
 5. Al descartar, comprobar que se elimina el borrador y su foto, pero no las lecturas ya guardadas.
 6. Ejecutar `npm test` para las reglas de foto obligatoria y estado; el comportamiento de persistencia se verifica en el dispositivo.
 
-## Uso de IA
 
-La IA propuso formularios controlados con `useState` y descartó React Hook Form y Formik porque el problema principal no es el tamaño del formulario sino la persistencia del borrador y las reglas de negocio, que igual habría que escribir. Se aceptó la recomendación. Se acordó guardar `lecturaActual` como texto durante la edición para no perder el punto decimal mientras se escribe, y convertirla a número solo al validar y guardar. El estudiante debe poder explicar por qué el borrador no vive solo en el estado de React.

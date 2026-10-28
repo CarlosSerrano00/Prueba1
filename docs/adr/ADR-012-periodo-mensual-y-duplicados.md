@@ -61,6 +61,3 @@ Se guarda en la lectura y no se recalcula. La restricción principal es `UNIQUE 
 6. Contra MockAPI, consultar `GET /lecturas?codigoMedidor=MED-100008&periodo=2026-10` y confirmar que el motor la detecta antes del `POST`.
 7. Revisar que una lectura enviada no se puede editar ni eliminar desde la interfaz ni desde el repositorio.
 
-## Uso de IA
-
-La IA propuso el mes calendario local y descartó UTC y un ciclo de facturación inventado. Se aceptó porque el enunciado no define un ciclo y porque el técnico ve la fecha local. Se decidió además rechazar lecturas menores que la anterior en lugar de inventar una regla de reemplazo. El estudiante debe poder explicar la restricción `UNIQUE` y por qué el periodo se guarda, no se recalcula.

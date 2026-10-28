@@ -43,9 +43,9 @@ El motor de sincronización:
 2. Al iniciar, recupera filas que quedaron en `enviando` por un cierre inesperado y las devuelve a `pendiente`.
 3. Marca la fila como `enviando` antes de leerla para que una edición simultánea sea rechazada.
 4. Antes de crear, consulta `GET /lecturas?localId=<localId>`. Si ya existe, adopta el `id` remoto y la marca como enviada sin crear otra.
-5. Si no existe, hace `POST`. Solo marca `enviado` después de una respuesta 2xx con el objeto creado.
-6. Si el `POST` falla por red o timeout, deja la fila en `pendiente`, incrementa `intentos_envio` y guarda un mensaje. El siguiente intento vuelve a comprobar por `localId`.
-7. Si el servidor responde 409 por `localId`, trata el registro como ya creado y lo verifica; si responde 409 por medidor/periodo, lo marca `requiere_revision` y no lo reintenta en bucle.
+5. Si no existe, consulta `GET /lecturas?codigoMedidor=<codigo>&periodo=<periodo>`. Si una búsqueda responde 404, se interpreta como ausencia de coincidencias y se continúa con la siguiente comprobación; los errores del `POST` no se interpretan así. Si ya hay una lectura de otro dispositivo, no hace el `POST` y la marca `requiere_revision`. Si no hay ninguna, hace `POST`. Solo marca `enviado` después de una respuesta 2xx con el objeto creado.
+6. Si el `POST` falla por red o timeout, deja la fila en `pendiente`, incrementa `intentos_envio` y guarda un mensaje. El siguiente intento vuelve a comprobar por `localId` y por periodo.
+7. Si el servidor responde 409 por `localId`, trata el registro como ya creado y lo verifica; si el mock local responde 409 por medidor/periodo, lo marca `requiere_revision` y no lo reintenta en bucle.
 8. Antes de enviar, actualiza la verificación con los datos remotos del medidor. Si detecta una anomalía y no hay confirmación/foto, no envía: lo marca `requiere_revision` para que el técnico lo corrija.
 
 El `localId` se genera localmente antes del primer guardado con timestamp + dos bloques aleatorios en base 36. No se usa un contador incremental, porque dos instalaciones podrían generar el mismo valor. No se añade `expo-crypto` para este caso: el identificador no es un secreto y la probabilidad de colisión es despreciable para el volumen de la prueba.
@@ -54,7 +54,7 @@ El `localId` se genera localmente antes del primer guardado con timestamp + dos 
 
 - Se gana una cola persistente y una estrategia verificable contra duplicados.
 - Se acepta que la sincronización no ocurre con la app completamente cerrada; ocurre al abrirla, al volver a primer plano, al recuperar red y cada 30 segundos mientras esté activa.
-- Riesgo: entre el `GET` y el `POST` existe una ventana de carrera si dos dispositivos intentan crear la misma lectura. MockAPI no permite una transacción atómica; se documenta la limitación. El servidor local de desarrollo sí rechaza `localId` duplicado con 409.
+- Riesgo: entre el `GET` y el `POST` existe una ventana de carrera si dos dispositivos intentan crear la misma lectura. La comprobación por medidor/periodo reduce el riesgo, pero MockAPI no permite una transacción atómica; se documenta la limitación. El servidor local de desarrollo sí rechaza `localId` y medidor/periodo duplicados con 409.
 - Riesgo: `enLinea` se basa en `isConnected`, no en `isInternetReachable`, para permitir un servidor local en una red sin Internet. La disponibilidad real se confirma con las respuestas HTTP; si el servidor no responde, se muestra el error y se reintenta.
 - Riesgo: una edición mientras la fila está `enviando` se rechaza con un mensaje claro; el técnico espera unos segundos y vuelve a intentar. Esto evita enviar una versión antigua.
 
@@ -66,7 +66,3 @@ El `localId` se genera localmente antes del primer guardado con timestamp + dos 
 4. Activar modo avión durante un envío y recuperarlo; comprobar que no hay duplicados.
 5. Verificar que el indicador de conexión y pendientes aparece en Inicio, Buscar, Medidor, Lecturas y Perfil.
 6. Revisar que una fila marcada `enviado` no vuelve a entrar en la cola.
-
-## Uso de IA
-
-La IA propuso `expo-network` y una sincronización propia con `localId`, descartando NetInfo, TanStack Query y tareas en segundo plano. Se aceptó porque la idempotencia depende de una comprobación previa, no solo de reintentar la petición. Se reconoce la limitación de MockAPI: no hay una operación atómica "crear si no existe". El estudiante debe poder explicar por qué no basta con `setTimeout` y `POST`, y qué significa que el estado `enviado` se escriba solo después de la confirmación del servidor.

@@ -69,6 +69,3 @@ Se añaden `tsx` y `@types/node` como dependencias de desarrollo. También se co
 4. Registrar en `docs/pruebas.md` la fecha, el comando y el resultado real.
 5. Las pruebas que dependan de cámara, SQLite o modo avión se marcan como manuales y se ejecutan en el dispositivo; no se declaran aprobadas sin evidencia.
 
-## Uso de IA
-
-La IA propuso `node:test` + `tsx` y descartó Jest, Detox y Maestro por el tiempo y porque no hay emulador Android disponible. Se aceptó, con la condición de que el motor de sincronización se diseñara con dependencias inyectables para poder probar la idempotencia. El estudiante debe poder explicar qué se prueba automáticamente y qué se prueba a mano, sin afirmar que las pruebas de Node validan la cámara o SQLite.

@@ -65,6 +65,4 @@ No se instala Axios ni TanStack Query.
 4. Provocar un 404 (código inexistente) y un error de red, y comprobar que los mensajes son distintos.
 5. Revisar que la tabla `medidores_cache` se actualiza después de una consulta exitosa.
 
-## Uso de IA
 
-La IA recomendó `fetch` y descartó Axios y TanStack Query para este alcance. Se aceptó porque la caché requerida debe ser persistente y porque la cola de sincronización ya justifica SQLite. Se descartó la sugerencia de usar TanStack Query solo para las consultas de medidores: resolvería la pantalla, pero no R4, R8 ni R9, y agregaría una dependencia que la rúbrica penalizaría si no tuviera un requisito claro. El estudiante debe poder explicar la diferencia entre caché en memoria y caché persistente.
