@@ -12,7 +12,7 @@ Aceptado.
 
 ## Requisitos relacionados
 
-R1–R10 en su dimensión de usabilidad, y el criterio de diseño visual de la rúbrica, que penaliza con 5 puntos una interfaz genérica. R9 exige además que el estado de conexión y los pendientes se vean en todas las pantallas.
+R1–R10 en su dimensión de usabilidad, y el criterio de diseño visual de la rúbrica. R9 exige además que el estado de conexión y los pendientes se vean en todas las pantallas.
 
 ## Contexto
 

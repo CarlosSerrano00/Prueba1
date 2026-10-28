@@ -1,6 +1,6 @@
 # ADR-010: Usar MockAPI como sistema de oficina y conservar un mock local compatible
 
-> **Actualización (2026-10-27):** la versión inicial de este ADR elegía un servidor local porque no había una URL de MockAPI disponible. El estudiante proporcionó después el proyecto `https://6ae0a4a2be3bc8fead97a3b2.mockapi.io`, se sembró y se verificó. La decisión final usa MockAPI por defecto y mantiene el servidor local como respaldo reproducible.
+> **Actualización (2026-10-27):** la versión inicial de este ADR elegía un servidor local porque no había una URL de MockAPI disponible. Se proporcionó después el proyecto `https://6ae0a4a2be3bc8fead97a3b2.mockapi.io`, se sembró y se verificó. La decisión final usa MockAPI por defecto y mantiene el servidor local como respaldo reproducible.
 
 ## Estado
 
@@ -18,7 +18,7 @@ R2, R3, R4, R9 y R10. MockAPI es la fuente de los medidores y el destino de la s
 
 El enunciado pide MockAPI o una herramienta equivalente, con recursos `medidores` y `lecturas`. La app debe funcionar contra un servicio real y no debe simular respuestas dentro de las pantallas.
 
-En la primera entrega no había una URL de MockAPI configurada. El estudiante entregó una URL del panel que terminaba en `/recursos`; esa ruta devuelve 404 y no es un endpoint REST. La raíz correcta es `https://6ae0a4a2be3bc8fead97a3b2.mockapi.io`, con los recursos `/medidores` y `/lecturas`.
+En la primera entrega no había una URL de MockAPI configurada. Se añadió una URL del panel que terminaba en `/recursos`; esa ruta devuelve 404 y no es un endpoint REST. La raíz correcta es `https://6ae0a4a2be3bc8fead97a3b2.mockapi.io`, con los recursos `/medidores` y `/lecturas`.
 
 MockAPI gratuito no impone unicidad por `localId` ni por medidor/periodo. Por eso la idempotencia y la prevención de duplicados deben seguir viviendo en el cliente y en SQLite, sin confiar en una restricción del servidor.
 
