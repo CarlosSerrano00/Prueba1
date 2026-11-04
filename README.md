@@ -8,6 +8,7 @@ Proyecto de la prueba técnica de la **ESFOT · Escuela Politécnica Nacional** 
 |---|---|
 | Framework | Expo SDK 57 · React Native 0.86 · TypeScript 6 |
 | Navegación | Expo Router (rutas por archivos) |
+| Autenticación | Firebase Authentication · persistencia AsyncStorage |
 | Almacenamiento | SQLite (`expo-sqlite`) |
 | Cámara | `expo-image-picker` + `expo-file-system` |
 | Conectividad | `expo-network` + `AppState` |
@@ -19,11 +20,12 @@ Proyecto de la prueba técnica de la **ESFOT · Escuela Politécnica Nacional** 
 ## Estado de la entrega
 
 - Código fuente completo para R1–R10.
-- `npm test`: **57 pruebas, 57 correctas** (17 suites).
+- `npm test`: **59 pruebas, 59 correctas** (17 suites).
 - `npm run typecheck` y `npm run lint`: sin errores.
 - `npx expo-doctor`: **21/21 comprobaciones correctas**.
 - `npx expo export --platform android`: bundle de producción generado correctamente.
 - MockAPI sembrado con 10 medidores y 3 lecturas de demostración mediante `npm run seed:mockapi`.
+- Firebase Authentication está integrado; para usarlo configura `.env.local` según `.env.example`.
 - APK de Android compilado en EAS: ver [APK de demostración](#apk-de-demostración).
 - **Pendiente de verificación en dispositivo físico**: la instalación y el recorrido manual del APK. En este entorno no hay Android SDK, `adb` ni emulador. El detalle de lo probado y lo pendiente está en [`docs/pruebas.md`](docs/pruebas.md).
 
@@ -113,14 +115,27 @@ npx expo start
 
 > El mock local usa HTTP. El APK habilita `usesCleartextTraffic` con un config plugin local (`plugins/withCleartextTraffic.js`). MockAPI usa HTTPS, así que ese permiso solo es necesario para el mock local.
 
-### Credenciales de demostración
+### Identidad local de técnico
 
-| Código | Clave | Técnico | Zona |
-|---|---|---|---|
-| `TEC-001` | `agua2026` | María Quishpe | Nono |
-| `TEC-002` | `agua2026` | Diego Cabrera | Lloa |
+Después de verificar su cuenta Firebase, el usuario ingresa un código de técnico para seleccionar el conjunto local de lecturas. Esta elección es independiente de Firebase y no prueba identidad laboral.
 
-La clave no se guarda en SQLite; solo se valida contra los datos quemados de `src/constants/tecnicos.ts`.
+Los códigos de demostración disponibles son `TEC-001` (Nono) y `TEC-002` (Lloa). En producción se debe obtener esta asignación de un backend autorizado. Firebase no se vincula con MockAPI.
+
+## Autenticación Firebase
+
+1. Copia `.env.example` como `.env.local` y completa `EXPO_PUBLIC_FIREBASE_API_KEY`, `EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN`, `EXPO_PUBLIC_FIREBASE_PROJECT_ID`, `EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET`, `EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` y `EXPO_PUBLIC_FIREBASE_APP_ID` con los datos de tu proyecto Firebase. `.env.local` está excluido de Git.
+2. En Firebase Console, habilita **Authentication → Sign-in method → Correo electrónico/contraseña**.
+3. Reinicia Expo con `npx expo start --clear`, crea una cuenta, abre el enlace recibido y regresa a la app.
+4. Inicia sesión con correo y contraseña; el estado de Firebase restaura la sesión y Expo Router bloquea las rutas hasta que el correo esté verificado.
+5. La recuperación envía un enlace con una respuesta neutral; desde Perfil se puede editar `displayName`, cambiar la contraseña con reautenticación y cerrar sesión.
+
+Firebase usa `initializeAuth` con `getReactNativePersistence(AsyncStorage)` en dispositivos, y `onAuthStateChanged` como fuente de verdad. El cambio de contraseña requiere `reauthenticateWithCredential` antes de `updatePassword`.
+
+Uniwind 1.x y Tailwind CSS 4 están conectados a Metro mediante `metro.config.js` y `src/global.css`. Reanimated 4 ya era compatible con Expo SDK 57. Las pantallas de autenticación, las rutas de medidores y todos los componentes compartidos usan clases Uniwind; ya no hay `StyleSheet.create` en `src/`. Los estilos en línea se limitan a valores dinámicos o propiedades no estáticas.
+
+Se usan animaciones de entrada FadeInDown/FadeInUp, sacudida al fallar el login, entrada escalonada de tarjetas del panel, respuesta de escala en botones, transiciones de alertas e indicador animado de seguridad de contraseña. Todas respetan reducción de movimiento cuando corresponde.
+
+La explicación de los flujos, la relación independiente con el código de técnico y el guion para defensa están en [`docs/autenticacion.md`](docs/autenticacion.md).
 
 ### Medidores de demostración
 
@@ -141,7 +156,7 @@ npm run android        # abrir en emulador/dispositivo Android
 npm run mock           # sistema de oficina simulado
 npm run mock:reset     # reiniciar datos y arrancar el mock
 npm run seed:mockapi   # sembrar MockAPI de forma idempotente
-npm test               # 57 pruebas de dominio, contrato y sincronización
+npm test               # pruebas de dominio, contrato y sincronización
 npm run typecheck      # TypeScript sin emitir
 npm run lint           # ESLint
 npm run export:android # bundle de producción para Android
@@ -184,12 +199,15 @@ src/
     borrador           recuperación de una captura interrumpida
     login               inicio de jornada
   components/ui/       biblioteca visual Claymorphism (botones, tarjetas, CampoFecha…)
-  context/             AppProvider: sesión, red, resumen y sincronización
+  context/             SesionProvider Firebase y AppProvider local/red/sincronización
+  config/              inicialización de Firebase
+  global.css           Tailwind 4 y tema Uniwind
   services/            casos de uso, API, fotos, sincronización
   storage/             SQLite: esquema, repositorios y mappers
   types/               modelos del dominio
   utils/               fechas, validaciones de entidades, contrato remoto, consumo, periodo
 docs/
+  autenticacion.md     flujos Firebase, protección y defensa oral
   adr/                 14 decisiones de arquitectura
   arquitectura.md      capas, modelo de datos y flujos
   trazabilidad.md      R1–R10 → código → prueba
@@ -232,7 +250,9 @@ Las dependencias del template que no se usan se retiraron (`expo-device`, `expo-
 
 ## Limitaciones conocidas
 
-- El inicio de sesión usa datos quemados, como permite el enunciado; no hay backend de usuarios.
+- La asignación código de técnico–Firebase es una selección local de demostración, no una comprobación de identidad laboral.
+- Si Firebase no está configurado, la app conserva sus datos locales pero no se puede iniciar una sesión nueva.
+- Las pantallas y componentes heredados de medidores aún usan StyleSheet; las nuevas pantallas de autenticación usan Uniwind.
 - MockAPI solo recibe los campos del seed. La foto, el motivo de inaccesibilidad, la descripción del daño y el consumo calculado quedan en SQLite y **no** se envían al servidor.
 - La sincronización es secuencial y reintenta cada 30 s; no pretende ser un motor de colas de nivel producción.
 - MockAPI no impone unicidad por medidor/periodo. Antes de enviar, la app consulta el periodo y evita el `POST` si ya existe otra lectura; aun así, dos dispositivos podrían pasar la comprobación al mismo tiempo.

@@ -26,12 +26,14 @@ import { mensajeDeError } from '../services/errors';
 import { resumenDeLecturas } from '../services/lecturasService';
 import {
   cerrarSesion as cerrarSesionServicio,
-  iniciarSesion as iniciarSesionServicio,
   restaurarSesion,
 } from '../services/sesionService';
 import { sincronizar } from '../services/syncService';
 import { resetearEnviosInterrumpidos } from '../storage/lecturasRepository';
 import { URL_API_POR_DEFECTO } from '../utils/url';
+import { buscarTecnicoPorCodigo } from '../constants/tecnicos';
+import { borrarSesion, guardarSesion } from '../storage/sesionRepository';
+import { useSesion } from './sesion';
 
 const RESUMEN_VACIO: ResumenLecturas = {
   pendientes: 0,
@@ -57,7 +59,7 @@ interface AppContextValue {
   ultimaSync: string | null;
   apiUrl: string;
   urlPorEntorno: boolean;
-  iniciarSesion: (codigo: string, clave: string) => Promise<void>;
+  asociarTecnico: (codigo: string) => Promise<void>;
   cerrarSesion: () => Promise<void>;
   refrescarEstado: () => Promise<void>;
   recargarBorrador: () => Promise<void>;
@@ -69,6 +71,11 @@ interface AppContextValue {
 const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
+  const {
+    usuario: usuarioFirebase,
+    cargando: cargandoFirebase,
+    cerrarSesion: cerrarSesionFirebase,
+  } = useSesion();
   const [cargando, setCargando] = useState(true);
   const [errorInicial, setErrorInicial] = useState<string | null>(null);
   const [sesion, setSesion] = useState<Sesion | null>(null);
@@ -113,6 +120,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     let activo = true;
 
     async function iniciar() {
+      if (cargandoFirebase) return;
       try {
         await resetearEnviosInterrumpidos();
         const [sesionGuardada, url, porEntorno] = await Promise.all([
@@ -121,7 +129,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
           urlEstaDefinidaPorEntorno(),
         ]);
         if (!activo) return;
-        setSesion(sesionGuardada);
+        const sesionValida =
+          usuarioFirebase?.emailVerified && sesionGuardada?.firebaseUid === usuarioFirebase.uid
+            ? sesionGuardada
+            : null;
+        if (sesionGuardada && !sesionValida) await borrarSesion();
+        if (!activo) return;
+        setSesion(sesionValida);
         setApiUrl(url);
         setUrlPorEntorno(porEntorno);
       } catch (error) {
@@ -135,7 +149,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => {
       activo = false;
     };
-  }, []);
+  }, [cargandoFirebase, usuarioFirebase?.emailVerified, usuarioFirebase?.uid]);
 
   const revisarRed = useCallback(async () => {
     try {
@@ -183,13 +197,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(tarea);
   }, [refrescarEstado]);
 
-  const iniciarSesion = useCallback(async (codigo: string, clave: string) => {
-    const nueva = await iniciarSesionServicio(codigo, clave);
-    setSesion(nueva);
+  const asociarTecnico = useCallback(async (codigo: string) => {
+    if (!usuarioFirebase?.emailVerified) {
+      throw new Error('Verifica tu correo de Firebase antes de asociar el código de técnico.');
+    }
+    const tecnico = buscarTecnicoPorCodigo(codigo);
+    if (!tecnico) throw new Error('El código de técnico no existe en los datos de demostración.');
+
+    const nuevaSesion: Sesion = {
+      codigoTecnico: tecnico.codigo,
+      nombre: usuarioFirebase.displayName?.trim() || tecnico.nombre,
+      zona: tecnico.zona,
+      iniciadaEn: new Date().toISOString(),
+      firebaseUid: usuarioFirebase.uid,
+    };
+    await guardarSesion(nuevaSesion);
+    setSesion(nuevaSesion);
     setUltimoErrorSync(null);
-  }, []);
+  }, [usuarioFirebase]);
 
   const cerrarSesion = useCallback(async () => {
+    await cerrarSesionFirebase();
     await cerrarSesionServicio();
     setSesion(null);
     setResumen(RESUMEN_VACIO);
@@ -197,7 +225,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setBorradores(0);
     setUltimoErrorSync(null);
     setUltimaSync(null);
-  }, []);
+  }, [cerrarSesionFirebase]);
 
   const sincronizarAhora = useCallback(async () => {
     if (!sesion || !enLinea || sincronizandoRef.current) return;
@@ -295,7 +323,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ultimaSync,
       apiUrl,
       urlPorEntorno,
-      iniciarSesion,
+      asociarTecnico,
       cerrarSesion,
       refrescarEstado,
       recargarBorrador,
@@ -313,7 +341,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       errorInicial,
       estadoRed,
       guardarApiUrl,
-      iniciarSesion,
+      asociarTecnico,
       recargarBorrador,
       refrescarEstado,
       restablecerApi,

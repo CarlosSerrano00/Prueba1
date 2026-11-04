@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
-import { clayBorder, clayShadowSoft, colors, radius, spacing } from '../../constants/ui';
+import { colors } from '../../constants/ui';
 import { Texto } from './Texto';
 
 interface AppHeaderProps {
@@ -15,24 +15,25 @@ interface AppHeaderProps {
 
 export function AppHeader({ titulo, subtitulo, onBack, derecha, marca }: AppHeaderProps) {
   return (
-    <View style={estilos.fila}>
+    <View className="flex-row items-center gap-3 pb-2 pt-1">
       {onBack ? (
         <Pressable
           onPress={onBack}
           accessibilityRole="button"
           accessibilityLabel="Volver"
           hitSlop={6}
-          style={({ pressed }) => [estilos.botonAtras, pressed && estilos.presionado]}
+          className="clay-raised h-12 w-12 items-center justify-center rounded-2xl bg-aqua-surface shadow-sm"
+          style={({ pressed }) => pressed ? { opacity: 0.9, transform: [{ scale: 0.96 }] } : undefined}
         >
           <Ionicons name="arrow-back" size={22} color={colors.brand} />
         </Pressable>
       ) : marca ? (
-        <View style={estilos.logo}>
+        <View className="clay-raised h-12 w-12 items-center justify-center rounded-2xl bg-aqua-brand">
           <Ionicons name="water" size={20} color={colors.white} />
         </View>
       ) : null}
 
-      <View style={estilos.textos}>
+      <View className="flex-1 gap-0.5">
         <Texto variante="titulo" numberOfLines={2}>
           {titulo}
         </Texto>
@@ -43,49 +44,7 @@ export function AppHeader({ titulo, subtitulo, onBack, derecha, marca }: AppHead
         ) : null}
       </View>
 
-      {derecha ? <View style={estilos.derecha}>{derecha}</View> : null}
+      {derecha ? <View className="items-end">{derecha}</View> : null}
     </View>
   );
 }
-
-const estilos = StyleSheet.create({
-  fila: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    paddingBottom: spacing.sm,
-    paddingTop: spacing.xs,
-  },
-  botonAtras: {
-    width: 48,
-    height: 48,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-    ...clayBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...clayShadowSoft,
-  },
-  presionado: {
-    backgroundColor: colors.surfaceAlt,
-    transform: [{ scale: 0.96 }],
-  },
-  logo: {
-    width: 48,
-    height: 48,
-    borderRadius: radius.md,
-    backgroundColor: colors.brand,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.72)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...clayShadowSoft,
-  },
-  textos: {
-    flex: 1,
-    gap: 2,
-  },
-  derecha: {
-    alignItems: 'flex-end',
-  },
-});

@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import Animated, { FadeInDown, FadeInUp, ReduceMotion, useReducedMotion } from 'react-native-reanimated';
 
 import {
   Alerta,
@@ -13,14 +14,16 @@ import {
   StatCard,
   Texto,
 } from '@/components/ui';
-import { colors, clayBorder, clayShadowSoft, clayShadowStrong, radius, spacing } from '@/constants/ui';
+import { colors } from '@/constants/ui';
 import { useApp } from '@/context/AppProvider';
+import { useSesion } from '@/context/sesion';
 import { listarActividadReciente } from '@/services/lecturasService';
 import type { Lectura } from '@/types/models';
 import { formatearFechaJornada, iniciales, saludoSegunHora } from '@/utils/format';
 import { nombrePeriodo, obtenerPeriodo } from '@/utils/periodo';
 
 export default function InicioScreen() {
+  const { nombre } = useSesion();
   const {
     sesion,
     borrador,
@@ -31,6 +34,7 @@ export default function InicioScreen() {
     sincronizarAhora,
   } = useApp();
   const router = useRouter();
+  const reducirMovimiento = useReducedMotion();
   const [recientes, setRecientes] = useState<Lectura[]>([]);
   const [refrescando, setRefrescando] = useState(false);
 
@@ -63,9 +67,9 @@ export default function InicioScreen() {
 
   return (
     <AppScreen refrescando={refrescando} onRefresh={() => void refrescar()}>
-      <View style={estilos.barraMarca}>
-        <View style={estilos.marca}>
-          <View style={estilos.logo}>
+      <View className="flex-row items-center justify-between">
+        <View className="flex-row items-center gap-2">
+          <View className="h-11 w-11 items-center justify-center rounded-2xl border border-white/70 bg-indigo-950 shadow-sm">
             <Ionicons name="water" size={19} color={colors.white} />
           </View>
           <View>
@@ -81,66 +85,78 @@ export default function InicioScreen() {
           onPress={() => router.push('/perfil')}
           accessibilityRole="button"
           accessibilityLabel="Abrir perfil del técnico"
-          style={({ pressed }) => [estilos.avatar, pressed && estilos.avatarPresionado]}
+          className="h-[46px] w-[46px] items-center justify-center rounded-full border border-white bg-slate-50 shadow-sm"
+          style={({ pressed }) => pressed ? { backgroundColor: colors.accentSoft } : undefined}
         >
           <Texto variante="caption" peso="bold" color={colors.accentDark}>
-            {iniciales(sesion.nombre)}
+            {iniciales(nombre)}
           </Texto>
         </Pressable>
       </View>
 
-      <View style={estilos.hero}>
-        <View style={estilos.heroCirculo} />
-        <View style={estilos.heroCirculo2} />
+      <Animated.View
+        entering={reducirMovimiento ? undefined : FadeInDown.duration(320).reduceMotion(ReduceMotion.System)}
+        className="relative gap-1 overflow-hidden rounded-[30px] border border-white/40 bg-indigo-950 p-5 shadow-lg"
+      >
+        <View className="absolute -right-14 -top-16 h-[190px] w-[190px] rounded-full border border-white/15" />
+        <View className="absolute -bottom-12 right-3 h-[120px] w-[120px] rounded-full bg-teal-500/35" />
         <Texto variante="etiqueta" color={colors.textOnBrandMuted}>
           {formatearFechaJornada()} · {nombrePeriodo(obtenerPeriodo())}
         </Texto>
-        <Texto variante="titulo" color={colors.white} style={estilos.heroTitulo}>
-          {saludoSegunHora()}, {sesion.nombre.split(' ')[0]}
+        <Texto variante="titulo" color={colors.white} className="text-[30px] leading-9">
+          {saludoSegunHora()}, {nombre.split(' ')[0]}
         </Texto>
-        <View style={estilos.heroFila}>
-          <View style={estilos.heroDato}>
+        <View className="mt-2 flex-row items-center gap-2">
+          <View className="flex-row items-center gap-1">
             <Ionicons name="location-outline" size={15} color={colors.textOnBrandMuted} />
             <Texto variante="caption" color={colors.textOnBrandMuted}>
               Zona {sesion.zona}
             </Texto>
           </View>
-          <View style={estilos.heroSeparador} />
-          <View style={estilos.heroDato}>
+          <View className="h-3 w-px bg-white/25" />
+          <View className="flex-row items-center gap-1">
             <Ionicons name="id-card-outline" size={15} color={colors.textOnBrandMuted} />
             <Texto variante="caption" color={colors.textOnBrandMuted}>
               {sesion.codigoTecnico}
             </Texto>
           </View>
         </View>
-      </View>
+      </Animated.View>
 
-      <Pressable
-        onPress={() => router.push('/buscar')}
-        accessibilityRole="button"
-        accessibilityLabel="Registrar una lectura de medidor"
-        style={({ pressed }) => [estilos.accionPrincipal, pressed && estilos.accionPresionada]}
+      <Animated.View
+        entering={reducirMovimiento ? undefined : FadeInUp.delay(100).duration(320).reduceMotion(ReduceMotion.System)}
       >
-        <View style={estilos.accionIcono}>
-          <Ionicons name="speedometer-outline" size={28} color={colors.accentDark} />
-        </View>
-        <View style={estilos.accionTextos}>
-          <Texto variante="etiqueta" color={colors.accentSoft}>
-            Captura en campo
-          </Texto>
-          <Texto variante="subtitulo" color={colors.white}>
-            Registrar una lectura
-          </Texto>
-          <Texto variante="caption" color={colors.textOnBrandMuted}>
-            Consulta el medidor, revisa el consumo y guarda la foto.
-          </Texto>
-        </View>
-        <View style={estilos.accionFlecha}>
-          <Ionicons name="arrow-forward" size={20} color={colors.white} />
-        </View>
-      </Pressable>
+        <Pressable
+          onPress={() => router.push('/buscar')}
+          accessibilityRole="button"
+          accessibilityLabel="Registrar una lectura de medidor"
+          className="flex-row items-center gap-3 rounded-[30px] border border-white/45 bg-teal-500 p-4 shadow-lg"
+          style={({ pressed }) => pressed ? { backgroundColor: colors.accentDark, transform: [{ scale: 0.985 }] } : undefined}
+        >
+          <View className="h-14 w-14 items-center justify-center rounded-xl border border-white bg-white shadow-sm">
+            <Ionicons name="speedometer-outline" size={28} color={colors.accentDark} />
+          </View>
+          <View className="flex-1 gap-0.5">
+            <Texto variante="etiqueta" color={colors.accentSoft}>
+              Captura en campo
+            </Texto>
+            <Texto variante="subtitulo" color={colors.white}>
+              Registrar una lectura
+            </Texto>
+            <Texto variante="caption" color={colors.textOnBrandMuted}>
+              Consulta el medidor, revisa el consumo y guarda la foto.
+            </Texto>
+          </View>
+          <View className="h-[34px] w-[34px] items-center justify-center rounded-full bg-white/15">
+            <Ionicons name="arrow-forward" size={20} color={colors.white} />
+          </View>
+        </Pressable>
+      </Animated.View>
 
-      <View style={estilos.filaStats}>
+      <Animated.View
+        entering={reducirMovimiento ? undefined : FadeInUp.delay(220).duration(320).reduceMotion(ReduceMotion.System)}
+        className="flex-row gap-2"
+      >
         <StatCard
           valor={pendientes}
           etiqueta="Por enviar"
@@ -162,7 +178,7 @@ export default function InicioScreen() {
           color={colors.success}
           fondo={colors.successSoft}
         />
-      </View>
+      </Animated.View>
 
       {borrador ? (
         <Alerta
@@ -170,7 +186,7 @@ export default function InicioScreen() {
           titulo="Tienes una captura sin terminar"
           icono="document-text-outline"
           accion={
-            <View style={estilos.filaAcciones}>
+            <View className="flex-row flex-wrap items-center gap-3">
               <Boton
                 titulo="Continuar captura"
                 onPress={() => router.push('/borrador')}
@@ -178,7 +194,7 @@ export default function InicioScreen() {
                 icono="arrow-forward"
                 anchoCompleto={false}
               />
-              <Texto variante="micro" color={colors.draft} style={estilos.textoBorrador}>
+              <Texto variante="micro" color={colors.draft} className="flex-1">
                 Medidor {borrador.codigoMedidor} · paso {borrador.paso} de 3
               </Texto>
             </View>
@@ -188,7 +204,7 @@ export default function InicioScreen() {
         </Alerta>
       ) : null}
 
-      <View style={estilos.seccion}>
+      <View className="gap-3">
         <SectionTitle
           titulo="Últimos registros"
           descripcion="Los más recientes de tu jornada."
@@ -222,7 +238,7 @@ export default function InicioScreen() {
             }
           />
         ) : (
-          <View style={estilos.lista}>
+          <View className="gap-2">
             {recientes.map((lectura) => (
               <LecturaCard
                 key={lectura.localId}
@@ -241,150 +257,3 @@ export default function InicioScreen() {
     </AppScreen>
   );
 }
-
-const estilos = StyleSheet.create({
-  barraMarca: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  marca: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  logo: {
-    width: 44,
-    height: 44,
-    borderRadius: 15,
-    backgroundColor: colors.brand,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.72)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...clayShadowSoft,
-  },
-  avatar: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    backgroundColor: colors.surface,
-    ...clayBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...clayShadowSoft,
-  },
-  avatarPresionado: {
-    backgroundColor: colors.accentSoft,
-  },
-  hero: {
-    backgroundColor: colors.brand,
-    borderRadius: radius.xl,
-    padding: spacing.xl,
-    gap: spacing.xs,
-    overflow: 'hidden',
-    ...clayBorder,
-    borderColor: 'rgba(255,255,255,0.40)',
-    borderTopColor: 'rgba(255,255,255,0.70)',
-    borderBottomColor: 'rgba(40,43,120,0.40)',
-    ...clayShadowStrong,
-  },
-  heroCirculo: {
-    position: 'absolute',
-    width: 190,
-    height: 190,
-    borderRadius: 95,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.14)',
-    right: -55,
-    top: -65,
-  },
-  heroCirculo2: {
-    position: 'absolute',
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(14,165,164,0.36)',
-    right: 12,
-    bottom: -50,
-  },
-  heroTitulo: {
-    fontSize: 30,
-    lineHeight: 36,
-  },
-  heroFila: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginTop: spacing.sm,
-  },
-  heroDato: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  heroSeparador: {
-    width: 1,
-    height: 12,
-    backgroundColor: 'rgba(255,255,255,0.25)',
-  },
-  accionPrincipal: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    backgroundColor: colors.accent,
-    borderRadius: radius.xl,
-    padding: spacing.lg,
-    ...clayBorder,
-    borderColor: 'rgba(255,255,255,0.45)',
-    borderTopColor: 'rgba(255,255,255,0.75)',
-    borderBottomColor: 'rgba(13,115,113,0.45)',
-    ...clayShadowStrong,
-  },
-  accionPresionada: {
-    backgroundColor: colors.accentDark,
-    transform: [{ scale: 0.985 }],
-  },
-  accionIcono: {
-    width: 56,
-    height: 56,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-    borderWidth: 1.5,
-    borderColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...clayShadowSoft,
-  },
-  accionTextos: {
-    flex: 1,
-    gap: 2,
-  },
-  accionFlecha: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  filaStats: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  filaAcciones: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    flexWrap: 'wrap',
-  },
-  textoBorrador: {
-    flex: 1,
-  },
-  seccion: {
-    gap: spacing.md,
-  },
-  lista: {
-    gap: spacing.sm,
-  },
-});

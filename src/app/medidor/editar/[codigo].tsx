@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert, View } from 'react-native';
 
 import {
   Alerta,
@@ -15,7 +15,7 @@ import {
   SectionTitle,
   Texto,
 } from '@/components/ui';
-import { colors, radius, spacing } from '@/constants/ui';
+import { colors } from '@/constants/ui';
 import { useApp } from '@/context/AppProvider';
 import { mensajeDeError } from '@/services/errors';
 import { actualizarMedidor, consultarMedidor } from '@/services/medidoresService';
@@ -141,7 +141,7 @@ export default function EditarMedidorScreen() {
     return (
       <AppScreen>
         <AppHeader titulo="Editar medidor" subtitulo={codigo} onBack={() => router.back()} />
-        <View style={estilos.centro}>
+        <View className="flex-1 items-center justify-center gap-3 py-12">
           <ActivityIndicator size="large" color={colors.accent} />
           <Texto variante="caption" color={colors.textMuted}>
             Cargando la ficha del medidor…
@@ -191,16 +191,16 @@ export default function EditarMedidorScreen() {
         </Alerta>
       ) : null}
 
-      <Card estilo={estilos.resumenCard}>
-        <View style={estilos.codigoFila}>
-          <View style={estilos.codigoIcono}>
+      <Card className="gap-2 bg-indigo-50">
+        <View className="flex-row items-center gap-3">
+          <View className="h-[52px] w-[52px] items-center justify-center rounded-xl border border-white bg-white">
             <Ionicons name="speedometer-outline" size={24} color={colors.accentDark} />
           </View>
-          <View style={estilos.codigoTextos}>
+          <View className="flex-1 gap-px">
             <Texto variante="etiqueta" color={colors.textMuted}>
               Código de etiqueta
             </Texto>
-            <Texto variante="mono" peso="bold" color={colors.brand} style={estilos.codigo}>
+            <Texto variante="mono" peso="bold" color={colors.brand} className="text-[21px]">
               {medidor.codigo}
             </Texto>
           </View>
@@ -211,7 +211,7 @@ export default function EditarMedidorScreen() {
         </Texto>
       </Card>
 
-      <View style={estilos.seccion}>
+      <View className="gap-3">
         <SectionTitle
           titulo="Ubicación y cuenta"
           descripcion="Datos que usa el técnico para identificar el medidor en campo."
@@ -250,12 +250,12 @@ export default function EditarMedidorScreen() {
         />
       </View>
 
-      <View style={estilos.seccion}>
+      <View className="gap-3">
         <SectionTitle
           titulo="Estado del medidor"
           descripcion="El estado se muestra en la búsqueda y en la ficha del medidor."
         />
-        <View style={estilos.listaOpciones}>
+        <View className="gap-2">
           <ChoiceCard
             titulo="Activo"
             descripcion="El medidor está operativo y se le pueden tomar lecturas."
@@ -287,7 +287,7 @@ export default function EditarMedidorScreen() {
         {errores.estado ? <Alerta tono="peligro">{errores.estado}</Alerta> : null}
       </View>
 
-      <View style={estilos.seccion}>
+      <View className="gap-3">
         <SectionTitle
           titulo="Referencia de consumo"
           descripcion="El promedio mensual se usa para detectar consumos anómalos."
@@ -347,45 +347,3 @@ export default function EditarMedidorScreen() {
     </AppScreen>
   );
 }
-
-const estilos = StyleSheet.create({
-  centro: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.md,
-    paddingVertical: spacing.huge,
-  },
-  resumenCard: {
-    gap: spacing.sm,
-    backgroundColor: colors.surfaceBrand,
-  },
-  codigoFila: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  codigoIcono: {
-    width: 52,
-    height: 52,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-    borderWidth: 1.5,
-    borderColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  codigoTextos: {
-    flex: 1,
-    gap: 1,
-  },
-  codigo: {
-    fontSize: 21,
-  },
-  seccion: {
-    gap: spacing.md,
-  },
-  listaOpciones: {
-    gap: spacing.sm,
-  },
-});

@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import {
   Pressable,
-  StyleSheet,
   TextInput,
   View,
   type KeyboardTypeOptions,
@@ -10,7 +9,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { clayInset, colors, fonts, minTouch, radius, spacing } from '../../constants/ui';
+import { colors } from '../../constants/ui';
 import { Texto } from './Texto';
 
 type Icono = keyof typeof Ionicons.glyphMap;
@@ -69,8 +68,8 @@ export function CampoTexto({
   const tieneError = Boolean(error);
 
   return (
-    <View style={[estilos.contenedor, estilo]}>
-      <View style={estilos.filaEtiqueta}>
+    <View className="gap-2" style={estilo}>
+      <View className="flex-row items-center justify-between gap-2">
         <Texto variante="etiqueta" color={colors.textMuted}>
           {etiqueta}
         </Texto>
@@ -82,20 +81,18 @@ export function CampoTexto({
       </View>
 
       <View
-        style={[
-          estilos.caja,
-          enfocado && estilos.cajaEnfocada,
-          tieneError && estilos.cajaError,
-          !editable && estilos.cajaInactiva,
-          multilinea && estilos.cajaMultilinea,
-        ]}
+        className={`min-h-[52px] flex-row items-center rounded-2xl border px-3 ${
+          enfocado ? 'border-teal-500 bg-teal-50' : 'clay-inset bg-[#E8EDF9]'
+        } ${tieneError ? 'border-rose-500 bg-rose-50' : ''} ${
+          !editable ? 'bg-[#E3E9F8]' : ''
+        } ${multilinea ? 'items-start py-3' : ''}`}
       >
         {icono ? (
           <Ionicons
             name={icono}
             size={20}
             color={tieneError ? colors.danger : enfocado ? colors.accent : colors.textMuted}
-            style={estilos.icono}
+            style={{ marginRight: 8, marginTop: 1 }}
           />
         ) : null}
 
@@ -113,6 +110,7 @@ export function CampoTexto({
           maxLength={maxLength}
           editable={editable}
           autoComplete={autoComplete}
+          textAlignVertical={multilinea ? 'top' : 'center'}
           onFocus={() => {
             setEnfocado(true);
             onFocus?.();
@@ -123,11 +121,13 @@ export function CampoTexto({
           }}
           accessibilityLabel={etiqueta}
           testID={testID}
-          style={[estilos.input, multilinea && estilos.inputMultilinea]}
+          className={`min-h-12 flex-1 py-2 text-base text-aqua-text ${
+            multilinea ? 'min-h-24' : ''
+          }`}
         />
 
         {sufijo ? (
-          <Texto variante="cuerpoFuerte" color={colors.textMuted} style={estilos.sufijo}>
+          <Texto variante="cuerpoFuerte" color={colors.textMuted} className="ml-2">
             {sufijo}
           </Texto>
         ) : null}
@@ -138,7 +138,7 @@ export function CampoTexto({
             accessibilityRole="button"
             accessibilityLabel={verClave ? 'Ocultar clave' : 'Mostrar clave'}
             hitSlop={8}
-            style={estilos.botonOjo}
+            className="mr-[-8px] h-10 w-10 items-center justify-center"
           >
             <Ionicons
               name={verClave ? 'eye-off-outline' : 'eye-outline'}
@@ -150,102 +150,17 @@ export function CampoTexto({
       </View>
 
       {error ? (
-        <View style={estilos.mensaje}>
+        <View className="flex-row items-start gap-1">
           <Ionicons name="alert-circle" size={15} color={colors.danger} />
-          <Texto variante="caption" color={colors.danger} style={estilos.textoMensaje}>
+          <Texto variante="caption" color={colors.danger} className="flex-1">
             {error}
           </Texto>
         </View>
       ) : ayuda ? (
-        <Texto variante="caption" color={colors.textMuted} style={estilos.ayuda}>
+        <Texto variante="caption" color={colors.textMuted} className="px-0.5">
           {ayuda}
         </Texto>
       ) : null}
     </View>
   );
 }
-
-const estilos = StyleSheet.create({
-  contenedor: {
-    gap: spacing.sm,
-  },
-  filaEtiqueta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing.sm,
-  },
-  caja: {
-    minHeight: minTouch + 4,
-    borderRadius: radius.md,
-    ...clayInset,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.md,
-  },
-  cajaEnfocada: {
-    borderColor: colors.accent,
-    borderTopColor: colors.accent,
-    borderLeftColor: colors.accent,
-    borderBottomColor: '#5EEAD4',
-    borderRightColor: '#5EEAD4',
-    backgroundColor: '#F5FFFC',
-  },
-  cajaError: {
-    borderColor: colors.danger,
-    borderTopColor: colors.danger,
-    borderLeftColor: colors.danger,
-    borderBottomColor: '#FDA4AF',
-    borderRightColor: '#FDA4AF',
-    backgroundColor: '#FFF5F7',
-  },
-  cajaInactiva: {
-    backgroundColor: colors.surfaceAlt,
-    borderColor: colors.border,
-    borderTopColor: colors.border,
-    borderLeftColor: colors.border,
-    borderBottomColor: colors.surface,
-    borderRightColor: colors.surface,
-  },
-  cajaMultilinea: {
-    alignItems: 'flex-start',
-    paddingVertical: spacing.md,
-  },
-  icono: {
-    marginRight: spacing.sm,
-    marginTop: 1,
-  },
-  input: {
-    flex: 1,
-    minHeight: 46,
-    paddingVertical: spacing.sm,
-    color: colors.text,
-    fontFamily: fonts.regular,
-    fontSize: 16,
-  },
-  inputMultilinea: {
-    minHeight: 92,
-    textAlignVertical: 'top',
-  },
-  sufijo: {
-    marginLeft: spacing.sm,
-  },
-  botonOjo: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: -spacing.sm,
-  },
-  mensaje: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.xs,
-  },
-  textoMensaje: {
-    flex: 1,
-  },
-  ayuda: {
-    paddingHorizontal: 2,
-  },
-});

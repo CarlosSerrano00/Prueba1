@@ -1,0 +1,56 @@
+@import 'tailwindcss';
+@import 'uniwind';
+
+@theme {
+  --color-aqua-50: #f3f6ff;
+  --color-aqua-100: #e3e9f8;
+  --color-aqua-background: #e9edf8;
+  --color-aqua-surface: #f3f6ff;
+  --color-aqua-surface-brand: #e4e7ff;
+  --color-aqua-brand: #5b5bd6;
+  --color-aqua-brand-dark: #4545b4;
+  --color-aqua-accent: #0ea5a4;
+  --color-aqua-accent-dark: #0f766e;
+  --color-aqua-accent-soft: #ccfbf1;
+  --color-aqua-text: #1d2340;
+  --color-aqua-text-muted: #5e6687;
+  --color-aqua-border: #d8dff1;
+  --color-aqua-700: #0e7490;
+  --color-aqua-800: #155e75;
+}
+
+@utility clay-raised {
+  border-width: 1.5px;
+  border-color: rgba(255, 255, 255, 0.95);
+  border-top-color: rgba(255, 255, 255, 0.99);
+  border-left-color: rgba(255, 255, 255, 0.96);
+  border-bottom-color: rgba(130, 139, 183, 0.24);
+  border-right-color: rgba(130, 139, 183, 0.24);
+}
+
+@utility clay-inset {
+  border-width: 1.5px;
+  border-color: #d6ddf0;
+  border-top-color: rgba(137, 147, 190, 0.48);
+  border-left-color: rgba(137, 147, 190, 0.3);
+  border-bottom-color: rgba(255, 255, 255, 0.98);
+  border-right-color: rgba(255, 255, 255, 0.98);
+}
+
+@layer theme {
+  :root {
+    @variant dark {
+      --color-background: #e9edf8;
+      --color-foreground: #1d2340;
+      --color-primary: #5b5bd6;
+      --color-accent: #0ea5a4;
+    }
+
+    @variant light {
+      --color-background: #e9edf8;
+      --color-foreground: #1d2340;
+      --color-primary: #5b5bd6;
+      --color-accent: #0ea5a4;
+    }
+  }
+}

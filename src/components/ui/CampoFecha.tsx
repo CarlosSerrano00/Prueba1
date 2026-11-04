@@ -7,12 +7,11 @@ import {
   Modal,
   Platform,
   Pressable,
-  StyleSheet,
   TextInput,
   View,
 } from 'react-native';
 
-import { clayInset, colors, fonts, minTouch, radius, spacing } from '../../constants/ui';
+import { colors, fonts } from '../../constants/ui';
 import { fechaLocalISO, normalizarFechaDia, parsearFecha } from '../../utils/fechas';
 import { formatearFecha } from '../../utils/format';
 import { Boton } from './Boton';
@@ -80,11 +79,11 @@ export function CampoFecha({
 
   if (Platform.OS === 'web') {
     return (
-      <View style={estilos.contenedor}>
+      <View className="gap-2">
         <Texto variante="etiqueta" color={colors.textMuted}>
           {etiqueta}
         </Texto>
-        <View style={[estilos.caja, tieneError && estilos.cajaError]}>
+        <View className="min-h-[52px] flex-row items-center gap-2 rounded-xl border border-white bg-slate-100 px-3" style={tieneError ? { borderColor: colors.danger, backgroundColor: '#FFF5F7' } : undefined}>
           <Ionicons name="calendar-outline" size={20} color={colors.textMuted} />
           <TextInput
             value={valor ?? ''}
@@ -107,18 +106,19 @@ export function CampoFecha({
             maxLength={10}
             autoCapitalize="none"
             autoCorrect={false}
-            style={estilos.input}
+            className="min-h-[46px] flex-1 py-2 text-base text-slate-900"
+            style={{ fontFamily: fonts.regular }}
           />
         </View>
         {error ? (
-          <View style={estilos.mensaje}>
+          <View className="flex-row items-start gap-1">
             <Ionicons name="alert-circle" size={15} color={colors.danger} />
-            <Texto variante="caption" color={colors.danger} style={estilos.textoMensaje}>
+            <Texto variante="caption" color={colors.danger} className="flex-1">
               {error}
             </Texto>
           </View>
         ) : ayuda ? (
-          <Texto variante="caption" color={colors.textMuted} style={estilos.ayuda}>
+          <Texto variante="caption" color={colors.textMuted} className="px-0.5">
             {ayuda}
           </Texto>
         ) : null}
@@ -127,7 +127,7 @@ export function CampoFecha({
   }
 
   return (
-    <View style={estilos.contenedor}>
+    <View className="gap-2">
       <Texto variante="etiqueta" color={colors.textMuted}>
         {etiqueta}
       </Texto>
@@ -137,10 +137,10 @@ export function CampoFecha({
         accessibilityRole="button"
         accessibilityLabel={`${etiqueta}. ${valor ? formatearFecha(valor) : placeholder}`}
         testID={testID}
+        className="min-h-[52px] flex-row items-center gap-2 rounded-xl border border-white bg-slate-100 px-3"
         style={({ pressed }) => [
-          estilos.caja,
-          tieneError && estilos.cajaError,
-          pressed && estilos.cajaPresionada,
+          tieneError ? { borderColor: colors.danger, backgroundColor: '#FFF5F7' } : undefined,
+          pressed ? { backgroundColor: colors.accentSoft } : undefined,
         ]}
       >
         <Ionicons
@@ -151,7 +151,7 @@ export function CampoFecha({
         <Texto
           variante="cuerpo"
           color={valor ? colors.text : colors.textSoft}
-          style={estilos.valor}
+          className="flex-1"
           numberOfLines={1}
         >
           {valor ? formatearFecha(valor) : placeholder}
@@ -162,7 +162,7 @@ export function CampoFecha({
             accessibilityRole="button"
             accessibilityLabel={`Limpiar ${etiqueta}`}
             hitSlop={8}
-            style={estilos.botonLimpiar}
+            className="mr-[-4px] h-9 w-8 items-center justify-center"
           >
             <Ionicons name="close-circle" size={19} color={colors.textSoft} />
           </Pressable>
@@ -172,14 +172,14 @@ export function CampoFecha({
       </Pressable>
 
       {error ? (
-        <View style={estilos.mensaje}>
+        <View className="flex-row items-start gap-1">
           <Ionicons name="alert-circle" size={15} color={colors.danger} />
-          <Texto variante="caption" color={colors.danger} style={estilos.textoMensaje}>
+          <Texto variante="caption" color={colors.danger} className="flex-1">
             {error}
           </Texto>
         </View>
       ) : ayuda ? (
-        <Texto variante="caption" color={colors.textMuted} style={estilos.ayuda}>
+        <Texto variante="caption" color={colors.textMuted} className="px-0.5">
           {ayuda}
         </Texto>
       ) : null}
@@ -203,16 +203,16 @@ export function CampoFecha({
           onRequestClose={cerrar}
           statusBarTranslucent
         >
-          <View style={estilos.fondoModal}>
-            <View style={estilos.panelModal}>
-              <View style={estilos.cabeceraModal}>
+          <View className="flex-1 justify-center p-4" style={{ backgroundColor: colors.overlay }}>
+            <View className="gap-3 rounded-[28px] border border-white bg-slate-50 p-4">
+              <View className="flex-row items-center justify-between gap-3">
                 <View>
                   <Texto variante="encabezado">Selecciona una fecha</Texto>
                   <Texto variante="caption" color={colors.textMuted}>
                     {etiqueta}
                   </Texto>
                 </View>
-                <View style={estilos.iconoModal}>
+                <View className="h-[46px] w-[46px] items-center justify-center rounded-xl bg-teal-100">
                   <Ionicons name="calendar" size={22} color={colors.accentDark} />
                 </View>
               </View>
@@ -227,20 +227,20 @@ export function CampoFecha({
                 themeVariant="light"
               />
 
-              <View style={estilos.accionesModal}>
+              <View className="flex-row gap-2">
                 <Boton
                   titulo="Cancelar"
                   onPress={cerrar}
                   variante="fantasma"
                   anchoCompleto={false}
-                  estilo={estilos.botonModal}
+                  className="flex-1"
                 />
                 <Boton
                   titulo="Usar fecha"
                   onPress={confirmarIos}
                   icono="checkmark"
                   anchoCompleto={false}
-                  estilo={estilos.botonModal}
+                  className="flex-1"
                 />
               </View>
             </View>
@@ -250,89 +250,3 @@ export function CampoFecha({
     </View>
   );
 }
-
-const estilos = StyleSheet.create({
-  contenedor: {
-    gap: spacing.sm,
-  },
-  caja: {
-    minHeight: minTouch + 4,
-    borderRadius: radius.md,
-    ...clayInset,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    gap: spacing.sm,
-  },
-  cajaPresionada: {
-    backgroundColor: colors.accentSoft,
-  },
-  cajaError: {
-    borderColor: colors.danger,
-    backgroundColor: '#FFF5F7',
-  },
-  valor: {
-    flex: 1,
-  },
-  input: {
-    flex: 1,
-    minHeight: 46,
-    paddingVertical: spacing.sm,
-    color: colors.text,
-    fontFamily: fonts.regular,
-    fontSize: 16,
-  },
-  botonLimpiar: {
-    width: 32,
-    height: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: -spacing.xs,
-  },
-  mensaje: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.xs,
-  },
-  textoMensaje: {
-    flex: 1,
-  },
-  ayuda: {
-    paddingHorizontal: 2,
-  },
-  fondoModal: {
-    flex: 1,
-    backgroundColor: colors.overlay,
-    justifyContent: 'center',
-    padding: spacing.lg,
-  },
-  panelModal: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.xl,
-    borderWidth: 1.5,
-    borderColor: colors.white,
-    padding: spacing.lg,
-    gap: spacing.md,
-  },
-  cabeceraModal: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing.md,
-  },
-  iconoModal: {
-    width: 46,
-    height: 46,
-    borderRadius: radius.md,
-    backgroundColor: colors.accentSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  accionesModal: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  botonModal: {
-    flex: 1,
-  },
-});

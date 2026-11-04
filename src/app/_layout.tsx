@@ -1,25 +1,28 @@
-import { useRouter, useSegments, Stack } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppProvider, useApp } from '@/context/AppProvider';
-import { colors, spacing } from '@/constants/ui';
-import { Texto } from '@/components/ui';
+import { SesionProvider, useSesion } from '@/context/sesion';
+import '../global.css';
 
 SplashScreen.preventAutoHideAsync();
 
 function NavegacionRaiz() {
-  const { cargando, errorInicial, sesion, borrador } = useApp();
+  const { cargando: cargandoApp, errorInicial, sesion, borrador } = useApp();
+  const { cargando: cargandoAuth, usuario, errorAutenticacion } = useSesion();
+  const cargando = cargandoApp || cargandoAuth;
+  const autenticado = Boolean(usuario);
+  const verificado = Boolean(usuario?.emailVerified);
+  const tecnicoAsociado = Boolean(sesion && sesion.firebaseUid === usuario?.uid);
   const router = useRouter();
   const segments = useSegments();
   const borradorOfrecido = useRef<string | null>(null);
-
-  const enLogin = segments[0] === 'login';
-  const enBorrador = segments[0] === 'borrador';
   const enRegistro = segments[0] === 'registro';
+  const enBorrador = segments[0] === 'borrador';
 
   useEffect(() => {
     if (cargando) return;
@@ -31,43 +34,40 @@ function NavegacionRaiz() {
   }, [sesion?.codigoTecnico]);
 
   useEffect(() => {
-    if (cargando) return;
-
-    if (!sesion) {
-      borradorOfrecido.current = null;
-      if (!enLogin) router.replace('/login');
-      return;
-    }
-
-    if (enLogin) {
-      router.replace('/');
-      return;
-    }
-
     if (
-      borrador &&
-      borradorOfrecido.current !== borrador.localId &&
-      !enRegistro &&
-      !enBorrador
+      !tecnicoAsociado ||
+      !borrador ||
+      borradorOfrecido.current === borrador.localId ||
+      enRegistro ||
+      enBorrador
     ) {
-      borradorOfrecido.current = borrador.localId;
-      router.push('/borrador');
+      return;
     }
-  }, [borrador, cargando, enBorrador, enLogin, enRegistro, router, sesion]);
+    borradorOfrecido.current = borrador.localId;
+    router.push('/borrador');
+  }, [borrador, enBorrador, enRegistro, router, tecnicoAsociado]);
 
   if (errorInicial) {
     return (
-      <SafeAreaView style={estilos.errorPantalla}>
-        <View style={estilos.errorContenido}>
-          <Texto variante="titulo">No se pudo abrir el almacenamiento local</Texto>
-          <Texto variante="cuerpo" color={colors.textMuted}>
-            {errorInicial}
-          </Texto>
-          <Texto variante="caption" color={colors.textMuted}>
+      <SafeAreaView className="flex-1 justify-center bg-aqua-background px-6">
+        <View className="gap-4">
+          <Text className="text-2xl font-bold text-aqua-text">No se pudo abrir el almacenamiento local</Text>
+          <Text className="text-aqua-text-muted">{errorInicial}</Text>
+          <Text className="text-sm text-slate-500">
             Cierra la aplicación y vuelve a abrirla. Si el problema continúa, borra los datos de
             AquaRuta desde los ajustes del teléfono.
-          </Texto>
+          </Text>
         </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (errorAutenticacion) {
+    return (
+      <SafeAreaView className="flex-1 justify-center bg-aqua-background px-6">
+        <Text className="text-lg text-rose-800">
+          No se pudo restaurar la sesión de Firebase: {errorAutenticacion}
+        </Text>
       </SafeAreaView>
     );
   }
@@ -80,17 +80,31 @@ function NavegacionRaiz() {
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: colors.background },
+          contentStyle: { backgroundColor: '#f0f9ff' },
           animation: 'slide_from_right',
         }}
       >
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="login" options={{ animation: 'fade' }} />
-        <Stack.Screen name="borrador" options={{ animation: 'fade' }} />
-        <Stack.Screen name="medidor/[codigo]" />
-        <Stack.Screen name="medidor/editar/[codigo]" />
-        <Stack.Screen name="registro/[codigo]" />
-        <Stack.Screen name="lectura/[localId]" />
+        <Stack.Protected guard={!autenticado}>
+          <Stack.Screen name="login" options={{ animation: 'fade' }} />
+          <Stack.Screen name="crear-cuenta" />
+          <Stack.Screen name="recuperar-clave" />
+        </Stack.Protected>
+        <Stack.Protected guard={autenticado && !verificado}>
+          <Stack.Screen name="verificar-correo" options={{ animation: 'fade' }} />
+        </Stack.Protected>
+        <Stack.Protected guard={autenticado && verificado && !tecnicoAsociado}>
+          <Stack.Screen name="codigo-tecnico" options={{ animation: 'fade' }} />
+        </Stack.Protected>
+        <Stack.Protected guard={autenticado && verificado && tecnicoAsociado}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="borrador" options={{ animation: 'fade' }} />
+          <Stack.Screen name="medidor/[codigo]" />
+          <Stack.Screen name="medidor/editar/[codigo]" />
+          <Stack.Screen name="registro/[codigo]" />
+          <Stack.Screen name="lectura/[localId]" />
+          <Stack.Screen name="editar-perfil" />
+          <Stack.Screen name="cambiar-clave" />
+        </Stack.Protected>
         <Stack.Screen name="+not-found" />
       </Stack>
     </>
@@ -99,20 +113,10 @@ function NavegacionRaiz() {
 
 export default function RootLayout() {
   return (
-    <AppProvider>
-      <NavegacionRaiz />
-    </AppProvider>
+    <SesionProvider>
+      <AppProvider>
+        <NavegacionRaiz />
+      </AppProvider>
+    </SesionProvider>
   );
 }
-
-const estilos = StyleSheet.create({
-  errorPantalla: {
-    flex: 1,
-    backgroundColor: colors.background,
-    justifyContent: 'center',
-  },
-  errorContenido: {
-    padding: spacing.xxl,
-    gap: spacing.md,
-  },
-});

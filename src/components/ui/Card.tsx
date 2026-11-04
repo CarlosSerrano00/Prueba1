@@ -1,24 +1,24 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import {
-  cardShadow,
-  clayBorder,
-  clayShadowSoft,
   colors,
-  radius,
-  spacing,
 } from '../../constants/ui';
 import { Texto } from './Texto';
 
 interface CardProps {
   children: ReactNode;
   estilo?: StyleProp<ViewStyle>;
+  className?: string;
 }
 
-export function Card({ children, estilo }: CardProps) {
-  return <View style={[estilos.card, estilo]}>{children}</View>;
+export function Card({ children, estilo, className }: CardProps) {
+  return (
+    <View className={`clay-raised rounded-[26px] bg-aqua-surface p-4 shadow-md ${className ?? ''}`} style={estilo}>
+      {children}
+    </View>
+  );
 }
 
 interface TarjetaPresionableProps extends CardProps {
@@ -30,6 +30,7 @@ interface TarjetaPresionableProps extends CardProps {
 export function TarjetaPresionable({
   children,
   estilo,
+  className,
   onPress,
   accessibilityLabel,
   deshabilitada = false,
@@ -41,11 +42,10 @@ export function TarjetaPresionable({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       android_ripple={{ color: colors.surfaceAlt }}
+      className={`clay-raised rounded-[26px] bg-aqua-surface p-4 shadow-md ${deshabilitada ? 'opacity-55' : ''} ${className ?? ''}`}
       style={({ pressed }) => [
-        estilos.card,
         estilo,
-        pressed && !deshabilitada ? estilos.presionada : null,
-        deshabilitada ? estilos.deshabilitada : null,
+        pressed && !deshabilitada ? { opacity: 0.92, transform: [{ scale: 0.985 }] } : null,
       ]}
     >
       {children}
@@ -61,8 +61,8 @@ interface SectionTitleProps {
 
 export function SectionTitle({ titulo, descripcion, accion }: SectionTitleProps) {
   return (
-    <View style={estilos.sectionTitle}>
-      <View style={estilos.sectionTitleTextos}>
+    <View className="flex-row items-end justify-between gap-3">
+      <View className="flex-1 gap-0.5">
         <Texto variante="encabezado">{titulo}</Texto>
         {descripcion ? (
           <Texto variante="caption" color={colors.textMuted}>
@@ -85,12 +85,12 @@ interface StatCardProps {
 
 export function StatCard({ valor, etiqueta, icono, color, fondo }: StatCardProps) {
   return (
-    <View style={[estilos.stat, { backgroundColor: fondo }]}>
+    <View className="min-h-[104px] flex-1 justify-center gap-0.5 rounded-3xl border border-white p-3 shadow-sm" style={{ backgroundColor: fondo }}>
       <Ionicons name={icono} size={18} color={color} />
-      <Texto variante="titulo" color={color} style={estilos.statValor}>
+      <Texto variante="titulo" color={color} className="mt-0.5 text-[26px] leading-[31px]">
         {valor}
       </Texto>
-      <Texto variante="micro" color={color} peso="medium" style={estilos.statEtiqueta}>
+      <Texto variante="micro" color={color} peso="medium" className="leading-[14px]">
         {etiqueta}
       </Texto>
     </View>
@@ -106,80 +106,16 @@ interface InfoRowProps {
 
 export function InfoRow({ etiqueta, valor, color = colors.text, icono }: InfoRowProps) {
   return (
-    <View style={estilos.infoRow}>
-      <View style={estilos.infoEtiqueta}>
+    <View className="flex-row items-start justify-between gap-4 py-2">
+      <View className="flex-shrink flex-row items-center gap-1">
         {icono ? <Ionicons name={icono} size={15} color={colors.textSoft} /> : null}
         <Texto variante="caption" color={colors.textMuted}>
           {etiqueta}
         </Texto>
       </View>
-      <Texto variante="cuerpoFuerte" color={color} style={estilos.infoValor}>
+      <Texto variante="cuerpoFuerte" color={color} className="shrink text-right">
         {valor}
       </Texto>
     </View>
   );
 }
-
-const estilos = StyleSheet.create({
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    ...clayBorder,
-    padding: spacing.lg,
-    ...cardShadow,
-  },
-  presionada: {
-    opacity: 0.92,
-    transform: [{ scale: 0.985 }],
-  },
-  deshabilitada: {
-    opacity: 0.55,
-  },
-  sectionTitle: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    gap: spacing.md,
-  },
-  sectionTitleTextos: {
-    flex: 1,
-    gap: 2,
-  },
-  stat: {
-    flex: 1,
-    minHeight: 104,
-    borderRadius: radius.lg,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.85)',
-    borderBottomColor: 'rgba(130,139,183,0.20)',
-    padding: spacing.md,
-    gap: 2,
-    justifyContent: 'center',
-    ...clayShadowSoft,
-  },
-  statValor: {
-    fontSize: 26,
-    lineHeight: 31,
-    marginTop: 2,
-  },
-  statEtiqueta: {
-    lineHeight: 14,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: spacing.lg,
-    paddingVertical: spacing.sm + 1,
-  },
-  infoEtiqueta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    flexShrink: 1,
-  },
-  infoValor: {
-    flexShrink: 1,
-    textAlign: 'right',
-  },
-});

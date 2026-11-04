@@ -1,7 +1,7 @@
 import * as SQLite from 'expo-sqlite';
 
 const NOMBRE_BASE = 'aquaruta.db';
-const VERSION_ESQUEMA = 1;
+const VERSION_ESQUEMA = 2;
 
 let basePromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
@@ -104,6 +104,13 @@ async function migrar(db: SQLite.SQLiteDatabase): Promise<void> {
           valor TEXT NOT NULL
         );
       `);
+      await db.execAsync(`PRAGMA user_version = ${VERSION_ESQUEMA};`);
+    });
+  }
+
+  if (versionActual < 2) {
+    await db.withTransactionAsync(async () => {
+      await db.execAsync('ALTER TABLE sesion ADD COLUMN firebase_uid TEXT;');
       await db.execAsync(`PRAGMA user_version = ${VERSION_ESQUEMA};`);
     });
   }

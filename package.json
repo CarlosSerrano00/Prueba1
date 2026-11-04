@@ -5,6 +5,7 @@
   "dependencies": {
     "@expo/ui": "~57.0.26",
     "@expo/vector-icons": "^15.0.2",
+    "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/datetimepicker": "9.1.0",
     "expo": "~57.0.31",
     "expo-constants": "~57.0.22",
@@ -21,6 +22,7 @@
     "expo-status-bar": "~57.0.1",
     "expo-symbols": "~57.0.3",
     "expo-system-ui": "~57.0.4",
+    "firebase": "^13.2.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.86.3",
@@ -29,7 +31,9 @@
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
     "react-native-web": "~0.21.0",
-    "react-native-worklets": "0.10.1"
+    "react-native-worklets": "0.10.1",
+    "tailwindcss": "^4.3.4",
+    "uniwind": "^1.13.1"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",
@@ -46,7 +50,7 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test tests/validators.test.ts tests/consumo.test.ts tests/syncEngine.test.ts tests/validacionesEntidades.test.ts tests/contratoRemoto.test.ts",
+    "test": "node --import tsx --test tests/validators.test.ts tests/consumo.test.ts tests/syncEngine.test.ts tests/validacionesEntidades.test.ts tests/contratoRemoto.test.ts tests/fortalezaClave.test.ts",
     "test:watch": "node --import tsx --test --watch tests/",
     "mock": "node mock-api/server.mjs",
     "mock:reset": "node mock-api/server.mjs --reset",

@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, View } from 'react-native';
 
 import {
   Alerta,
@@ -14,7 +14,7 @@ import {
   SectionTitle,
   Texto,
 } from '@/components/ui';
-import { clayInset, clayShadowSoft, colors, radius, spacing } from '@/constants/ui';
+import { colors } from '@/constants/ui';
 import { useApp } from '@/context/AppProvider';
 import { listarLecturasDelTecnico } from '@/services/lecturasService';
 import type { FiltroLecturas, Lectura } from '@/types/models';
@@ -94,7 +94,7 @@ export default function LecturasScreen() {
         derecha={<Badge texto={`${totalLecturas} en total`} tono="marca" icono="documents-outline" />}
       />
 
-      <View style={estilos.filtros} accessibilityRole="tablist">
+      <View className="flex-row gap-1 rounded-3xl border border-white bg-slate-100 p-1" accessibilityRole="tablist">
         {opciones.map((opcion) => {
           const activo = filtro === opcion.valor;
           return (
@@ -104,11 +104,8 @@ export default function LecturasScreen() {
               accessibilityRole="tab"
               accessibilityState={{ selected: activo }}
               accessibilityLabel={`Filtrar ${opcion.etiqueta}`}
-              style={({ pressed }) => [
-                estilos.filtro,
-                activo && estilos.filtroActivo,
-                pressed && estilos.filtroPresionado,
-              ]}
+              className={`min-h-[46px] flex-1 flex-row items-center justify-center gap-1 rounded-xl px-1 ${activo ? 'border border-white/50 bg-indigo-950 shadow-sm' : ''}`}
+              style={({ pressed }) => pressed ? { opacity: 0.86, transform: [{ scale: 0.985 }] } : undefined}
             >
               <Ionicons
                 name={opcion.icono}
@@ -138,7 +135,7 @@ export default function LecturasScreen() {
       ) : null}
 
       {cargando && lecturas.length === 0 ? (
-        <View style={estilos.cargando}>
+        <View className="items-center justify-center gap-3 py-12">
           <ActivityIndicator size="large" color={colors.accent} />
           <Texto variante="caption" color={colors.textMuted}>
             Leyendo las lecturas guardadas…
@@ -161,7 +158,7 @@ export default function LecturasScreen() {
           }
         />
       ) : (
-        <View style={estilos.seccion}>
+        <View className="gap-3">
           <SectionTitle
             titulo={
               filtro === 'todas'
@@ -174,7 +171,7 @@ export default function LecturasScreen() {
               lecturas.length === 1 ? 'registro' : 'registros'
             } en este filtro.`}
           />
-          <View style={estilos.lista}>
+          <View className="gap-2">
             {lecturas.map((lectura) => (
               <LecturaCard
                 key={lectura.localId}
@@ -193,46 +190,3 @@ export default function LecturasScreen() {
     </AppScreen>
   );
 }
-
-const estilos = StyleSheet.create({
-  filtros: {
-    flexDirection: 'row',
-    gap: spacing.xs,
-    ...clayInset,
-    borderRadius: radius.lg,
-    padding: spacing.xs,
-  },
-  filtro: {
-    flex: 1,
-    minHeight: 46,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 5,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.xs,
-  },
-  filtroActivo: {
-    backgroundColor: colors.brand,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.45)',
-    borderBottomColor: 'rgba(40,43,120,0.40)',
-    ...clayShadowSoft,
-  },
-  filtroPresionado: {
-    opacity: 0.86,
-    transform: [{ scale: 0.985 }],
-  },
-  seccion: {
-    gap: spacing.md,
-  },
-  lista: {
-    gap: spacing.sm,
-  },
-  cargando: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.md,
-    paddingVertical: spacing.huge,
-  },
-});

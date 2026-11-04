@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 
 import {
   Alerta,
@@ -15,7 +15,7 @@ import {
   SectionTitle,
   Texto,
 } from '@/components/ui';
-import { colors, radius, spacing } from '@/constants/ui';
+import { colors } from '@/constants/ui';
 import { useApp } from '@/context/AppProvider';
 import {
   descripcionEstadoEnvio,
@@ -103,7 +103,7 @@ export default function LecturaScreen() {
     return (
       <AppScreen>
         <AppHeader titulo="Lectura" onBack={() => router.back()} />
-        <View style={estilos.centro}>
+        <View className="flex-1 items-center justify-center gap-3 py-12">
           <ActivityIndicator size="large" color={colors.accent} />
           <Texto variante="caption" color={colors.textMuted}>
             Abriendo la lectura…
@@ -157,8 +157,8 @@ export default function LecturaScreen() {
         }
       />
 
-      <Card estilo={estilos.estadoCard}>
-        <View style={estilos.estadoFila}>
+      <Card className="gap-3">
+        <View className="flex-row items-center gap-3">
           <Ionicons
             name={
               lectura.estadoEnvio === 'enviado'
@@ -176,7 +176,7 @@ export default function LecturaScreen() {
                   : colors.warning
             }
           />
-          <View style={estilos.estadoTextos}>
+          <View className="flex-1 gap-1">
             <Texto variante="cuerpoFuerte">{etiquetaEstadoEnvio(lectura.estadoEnvio)}</Texto>
             <Texto variante="caption" color={colors.textMuted}>
               {descripcionEstadoEnvio(lectura.estadoEnvio)}
@@ -206,64 +206,64 @@ export default function LecturaScreen() {
         ) : null}
       </Card>
 
-      <View style={estilos.seccion}>
+      <View className="gap-3">
         <SectionTitle titulo="Datos registrados" />
-        <Card estilo={estilos.datosCard}>
+        <Card className="py-2">
           <InfoRow
             etiqueta="Medidor"
             valor={lectura.codigoMedidor}
             icono="barcode-outline"
           />
-          <View style={estilos.divisor} />
+          <View className="h-px bg-slate-100" />
           <InfoRow
             etiqueta="Periodo"
             valor={nombrePeriodo(lectura.periodo)}
             icono="calendar-outline"
           />
-          <View style={estilos.divisor} />
+          <View className="h-px bg-slate-100" />
           <InfoRow
             etiqueta="Fecha de registro"
             valor={formatearFechaHora(lectura.fechaRegistro)}
             icono="time-outline"
           />
-          <View style={estilos.divisor} />
+          <View className="h-px bg-slate-100" />
           <InfoRow
             etiqueta="Estado encontrado"
             valor={etiquetaTipoEstado(lectura.tipoEstado)}
             icono="pulse-outline"
           />
-          <View style={estilos.divisor} />
+          <View className="h-px bg-slate-100" />
           <InfoRow
             etiqueta="Lectura actual"
             valor={formatearMetros(lectura.lecturaActual)}
             icono="water-outline"
           />
-          <View style={estilos.divisor} />
+          <View className="h-px bg-slate-100" />
           <InfoRow
             etiqueta="Lectura anterior"
             valor={formatearMetros(lectura.ultimaLecturaReferencia)}
             icono="time-outline"
           />
-          <View style={estilos.divisor} />
+          <View className="h-px bg-slate-100" />
           <InfoRow
             etiqueta="Consumo calculado"
             valor={formatearMetros(lectura.consumoCalculado)}
             color={lectura.estadoVerificacion === 'anomalia_confirmada' ? colors.danger : colors.text}
             icono="analytics-outline"
           />
-          <View style={estilos.divisor} />
+          <View className="h-px bg-slate-100" />
           <InfoRow
             etiqueta="Promedio mensual"
             valor={formatearMetros(lectura.consumoPromedioReferencia)}
             icono="stats-chart-outline"
           />
-          <View style={estilos.divisor} />
+          <View className="h-px bg-slate-100" />
           <InfoRow
             etiqueta="Límite de anomalía"
             valor={formatearMetros(umbral)}
             icono="warning-outline"
           />
-          <View style={estilos.divisor} />
+          <View className="h-px bg-slate-100" />
           <InfoRow
             etiqueta="Verificación"
             valor={etiquetaEstadoVerificacion(lectura.estadoVerificacion)}
@@ -287,7 +287,7 @@ export default function LecturaScreen() {
       </Alerta>
 
       {lectura.tipoEstado === 'inaccesible' && lectura.motivoInaccesible ? (
-        <Card estilo={estilos.textoCard}>
+        <Card className="gap-2">
           <Texto variante="etiqueta" color={colors.textMuted}>
             Motivo de inaccesibilidad
           </Texto>
@@ -296,7 +296,7 @@ export default function LecturaScreen() {
       ) : null}
 
       {lectura.tipoEstado === 'danado' && lectura.descripcionDano ? (
-        <Card estilo={estilos.textoCard}>
+        <Card className="gap-2">
           <Texto variante="etiqueta" color={colors.textMuted}>
             Descripción del daño
           </Texto>
@@ -304,7 +304,7 @@ export default function LecturaScreen() {
         </Card>
       ) : null}
 
-      <View style={estilos.seccion}>
+      <View className="gap-3">
         <SectionTitle
           titulo="Foto del medidor"
           descripcion={
@@ -313,17 +313,17 @@ export default function LecturaScreen() {
               : 'Esta lectura no tiene una foto asociada.'
           }
         />
-        <Card estilo={estilos.fotoCard}>
+        <Card className="p-3">
           {fotoDisponible ? (
             <Image
               source={{ uri: lectura.fotoUri ?? undefined }}
-              style={estilos.foto}
+              className="h-[260px] w-full rounded-2xl"
               contentFit="cover"
               transition={150}
               accessibilityLabel={`Foto del medidor ${lectura.codigoMedidor}`}
             />
           ) : (
-            <View style={estilos.sinFoto}>
+            <View className="min-h-[180px] items-center justify-center gap-2">
               <Ionicons name="image-outline" size={30} color={colors.textSoft} />
               <Texto variante="caption" color={colors.textMuted} centrado>
                 {lectura.tipoEstado === 'normal' && lectura.estadoVerificacion !== 'anomalia_confirmada'
@@ -336,7 +336,7 @@ export default function LecturaScreen() {
       </View>
 
       {lectura.estadoEnvio !== 'enviado' ? (
-        <View style={estilos.seccion}>
+        <View className="gap-3">
           <SectionTitle
             titulo="Acciones"
             descripcion="Puedes corregir el registro mientras la oficina no lo haya confirmado."
@@ -387,55 +387,3 @@ export default function LecturaScreen() {
     </AppScreen>
   );
 }
-
-const estilos = StyleSheet.create({
-  centro: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.md,
-    paddingVertical: spacing.huge,
-  },
-  estadoCard: {
-    gap: spacing.md,
-    backgroundColor: colors.surfaceBrand,
-  },
-  estadoFila: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.md,
-  },
-  estadoTextos: {
-    flex: 1,
-    gap: 2,
-  },
-  seccion: {
-    gap: spacing.md,
-  },
-  datosCard: {
-    paddingVertical: spacing.sm,
-  },
-  divisor: {
-    height: 1,
-    backgroundColor: colors.surfaceAlt,
-  },
-  textoCard: {
-    gap: spacing.xs,
-  },
-  fotoCard: {
-    padding: spacing.sm,
-  },
-  foto: {
-    width: '100%',
-    height: 230,
-    borderRadius: radius.lg,
-    backgroundColor: colors.surfaceAlt,
-  },
-  sinFoto: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    paddingVertical: spacing.xl,
-    paddingHorizontal: spacing.lg,
-  },
-});

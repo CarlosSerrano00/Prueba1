@@ -1,10 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { Alert, View } from 'react-native';
 
 import { Alerta, AppHeader, AppScreen, Boton, Card, InfoRow, Texto } from '@/components/ui';
-import { colors, radius, spacing } from '@/constants/ui';
+import { colors } from '@/constants/ui';
 import { useApp } from '@/context/AppProvider';
 import { descartarBorrador } from '@/services/borradoresService';
 import { mensajeDeError } from '@/services/errors';
@@ -67,7 +67,7 @@ export default function BorradorScreen() {
     return (
       <AppScreen>
         <AppHeader titulo="Captura pendiente" onBack={salirSinDecidir} />
-        <View style={estilos.centro}>
+        <View className="flex-1 items-center justify-center gap-2 py-12">
           <Ionicons name="checkmark-circle-outline" size={44} color={colors.success} />
           <Texto variante="subtitulo" centrado>
             No hay capturas sin terminar
@@ -93,8 +93,8 @@ export default function BorradorScreen() {
         subtitulo="La app guardó tu avance para que no pierdas el trabajo de campo."
       />
 
-      <Card estilo={estilos.hero}>
-        <View style={estilos.icono}>
+      <Card className="gap-2 bg-indigo-50">
+        <View className="h-[62px] w-[62px] items-center justify-center rounded-xl border border-white bg-violet-100">
           <Ionicons name="document-text-outline" size={30} color={colors.draft} />
         </View>
         <Texto variante="subtitulo">Continúa donde la dejaste</Texto>
@@ -104,25 +104,25 @@ export default function BorradorScreen() {
         </Texto>
       </Card>
 
-      <Card estilo={estilos.datosCard}>
+      <Card className="py-2">
         <InfoRow
           etiqueta="Medidor"
           valor={borrador.codigoMedidor}
           icono="barcode-outline"
         />
-        <View style={estilos.divisor} />
+        <View className="h-px bg-slate-100" />
         <InfoRow
           etiqueta="Paso guardado"
           valor={`${borrador.paso} de 3`}
           icono="list-outline"
         />
-        <View style={estilos.divisor} />
+        <View className="h-px bg-slate-100" />
         <InfoRow
           etiqueta="Última actualización"
           valor={formatearFechaHora(borrador.actualizadoEn)}
           icono="time-outline"
         />
-        <View style={estilos.divisor} />
+        <View className="h-px bg-slate-100" />
         <InfoRow
           etiqueta="Foto adjunta"
           valor={borrador.fotoUri ? 'Sí' : 'Todavía no'}
@@ -167,34 +167,3 @@ export default function BorradorScreen() {
     </AppScreen>
   );
 }
-
-const estilos = StyleSheet.create({
-  centro: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    paddingVertical: spacing.huge,
-  },
-  hero: {
-    gap: spacing.sm,
-    backgroundColor: colors.surfaceBrand,
-  },
-  icono: {
-    width: 62,
-    height: 62,
-    borderRadius: radius.md,
-    backgroundColor: colors.draftSoft,
-    borderWidth: 1.5,
-    borderColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  datosCard: {
-    paddingVertical: spacing.sm,
-  },
-  divisor: {
-    height: 1,
-    backgroundColor: colors.surfaceAlt,
-  },
-});

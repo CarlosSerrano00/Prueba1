@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
-import { clayBorder, clayShadowSoft, colors, radius, spacing } from '../../constants/ui';
+import { colors } from '../../constants/ui';
 import { Texto } from './Texto';
 
 interface ChoiceCardProps {
@@ -30,24 +30,17 @@ export function ChoiceCard({
       accessibilityState={{ checked: seleccionado }}
       accessibilityLabel={`${titulo}. ${descripcion}`}
       android_ripple={{ color: fondo }}
+      className="clay-raised flex-row items-center gap-3 rounded-3xl bg-aqua-surface p-3 shadow-sm"
       style={({ pressed }) => [
-        estilos.tarjeta,
-        seleccionado && {
-          borderColor: color,
-          borderTopColor: color,
-          borderLeftColor: color,
-          borderBottomColor: color,
-          borderRightColor: color,
-          backgroundColor: fondo,
-        },
-        pressed && estilos.presionada,
+        seleccionado ? { borderColor: color, backgroundColor: fondo } : undefined,
+        pressed ? { opacity: 0.9, transform: [{ scale: 0.985 }] } : undefined,
       ]}
     >
-      <View style={[estilos.icono, { backgroundColor: seleccionado ? color : colors.surfaceAlt }]}>
+      <View className="h-11 w-11 items-center justify-center rounded-xl border border-white/50" style={{ backgroundColor: seleccionado ? color : colors.surfaceAlt }}>
         <Ionicons name={icono} size={21} color={seleccionado ? colors.white : colors.textMuted} />
       </View>
 
-      <View style={estilos.textos}>
+      <View className="flex-1 gap-px">
         <Texto variante="cuerpoFuerte" color={seleccionado ? color : colors.text}>
           {titulo}
         </Texto>
@@ -56,53 +49,9 @@ export function ChoiceCard({
         </Texto>
       </View>
 
-      <View style={[estilos.radio, seleccionado && { borderColor: color }]}>
-        {seleccionado ? <View style={[estilos.radioCentro, { backgroundColor: color }]} /> : null}
+      <View className="h-[22px] w-[22px] items-center justify-center rounded-full border-2" style={{ borderColor: seleccionado ? color : colors.borderStrong }}>
+        {seleccionado ? <View className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} /> : null}
       </View>
     </Pressable>
   );
 }
-
-const estilos = StyleSheet.create({
-  tarjeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    ...clayBorder,
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: spacing.md,
-    ...clayShadowSoft,
-  },
-  presionada: {
-    opacity: 0.9,
-    transform: [{ scale: 0.985 }],
-  },
-  icono: {
-    width: 44,
-    height: 44,
-    borderRadius: radius.sm,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.55)',
-  },
-  textos: {
-    flex: 1,
-    gap: 1,
-  },
-  radio: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 2,
-    borderColor: colors.borderStrong,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioCentro: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-});

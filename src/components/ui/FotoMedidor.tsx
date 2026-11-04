@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, View } from 'react-native';
 
-import { clayBorder, clayShadowSoft, colors, radius, spacing } from '../../constants/ui';
+import { colors } from '../../constants/ui';
 import { Badge } from './Badge';
 import { Texto } from './Texto';
 
@@ -28,9 +28,9 @@ export function FotoMedidor({
   deshabilitado = false,
 }: FotoMedidorProps) {
   return (
-    <View style={estilos.contenedor}>
-      <View style={estilos.cabecera}>
-        <View style={estilos.tituloFila}>
+    <View className="gap-2">
+      <View className="flex-row items-center justify-between gap-2">
+        <View className="flex-row items-center gap-2">
           <Ionicons name="camera" size={19} color={colors.brand} />
           <Texto variante="cuerpoFuerte">Foto del medidor</Texto>
         </View>
@@ -46,15 +46,16 @@ export function FotoMedidor({
       </Texto>
 
       {uri ? (
-        <View style={estilos.marcoFoto}>
-          <Image source={{ uri }} style={estilos.foto} contentFit="cover" transition={180} />
-          <View style={estilos.accionesFoto}>
+        <View className="h-[230px] overflow-hidden rounded-3xl border border-white bg-slate-100">
+          <Image source={{ uri }} className="h-full w-full" contentFit="cover" transition={180} />
+          <View className="absolute bottom-2 left-2 right-2 flex-row gap-2">
             <Pressable
               onPress={onTomar}
               disabled={cargando || deshabilitado}
               accessibilityRole="button"
               accessibilityLabel="Repetir la foto del medidor"
-              style={({ pressed }) => [estilos.accion, pressed && estilos.accionPresionada]}
+              className="min-h-[38px] flex-row items-center gap-1 rounded-full bg-slate-900/80 px-3"
+              style={({ pressed }) => pressed ? { backgroundColor: colors.brand } : undefined}
             >
               <Ionicons name="camera-reverse-outline" size={17} color={colors.white} />
               <Texto variante="caption" peso="bold" color={colors.white}>
@@ -67,7 +68,8 @@ export function FotoMedidor({
                 disabled={cargando || deshabilitado}
                 accessibilityRole="button"
                 accessibilityLabel="Quitar la foto del medidor"
-                style={({ pressed }) => [estilos.accion, pressed && estilos.accionPresionada]}
+                className="min-h-[38px] flex-row items-center gap-1 rounded-full bg-slate-900/80 px-3"
+                style={({ pressed }) => pressed ? { backgroundColor: colors.brand } : undefined}
               >
                 <Ionicons name="trash-outline" size={17} color={colors.white} />
                 <Texto variante="caption" peso="bold" color={colors.white}>
@@ -77,7 +79,7 @@ export function FotoMedidor({
             ) : null}
           </View>
           {cargando ? (
-            <View style={estilos.velo}>
+            <View className="absolute inset-0 items-center justify-center bg-slate-900/45">
               <ActivityIndicator color={colors.white} />
             </View>
           ) : null}
@@ -88,13 +90,14 @@ export function FotoMedidor({
           disabled={cargando || deshabilitado}
           accessibilityRole="button"
           accessibilityLabel="Tomar foto del medidor"
-          style={({ pressed }) => [estilos.marcoVacio, pressed && estilos.marcoPresionado]}
+          className="min-h-[188px] items-center justify-center gap-1 rounded-3xl border border-dashed border-slate-300 bg-slate-100 p-4 shadow-sm"
+          style={({ pressed }) => pressed ? { backgroundColor: colors.accentSoft, borderColor: colors.accent } : undefined}
         >
           {cargando ? (
             <ActivityIndicator color={colors.accent} />
           ) : (
             <>
-              <View style={estilos.camaraCirculo}>
+              <View className="mb-1 h-[68px] w-[68px] items-center justify-center rounded-full border border-white bg-white shadow-sm">
                 <Ionicons name="camera-outline" size={30} color={colors.accent} />
               </View>
               <Texto variante="cuerpoFuerte" color={colors.accentDark}>
@@ -109,9 +112,9 @@ export function FotoMedidor({
       )}
 
       {error ? (
-        <View style={estilos.error}>
+        <View className="flex-row items-start gap-1">
           <Ionicons name="alert-circle" size={16} color={colors.danger} />
-          <Texto variante="caption" color={colors.danger} style={estilos.textoError}>
+          <Texto variante="caption" color={colors.danger} className="flex-1">
             {error}
           </Texto>
         </View>
@@ -119,98 +122,3 @@ export function FotoMedidor({
     </View>
   );
 }
-
-const estilos = StyleSheet.create({
-  contenedor: {
-    gap: spacing.sm,
-  },
-  cabecera: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing.sm,
-  },
-  tituloFila: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  marcoFoto: {
-    height: 230,
-    borderRadius: radius.lg,
-    overflow: 'hidden',
-    backgroundColor: colors.surfaceAlt,
-    ...clayBorder,
-  },
-  foto: {
-    width: '100%',
-    height: '100%',
-  },
-  accionesFoto: {
-    position: 'absolute',
-    left: spacing.sm,
-    right: spacing.sm,
-    bottom: spacing.sm,
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  accion: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    minHeight: 38,
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.pill,
-    backgroundColor: 'rgba(7, 59, 76, 0.82)',
-  },
-  accionPresionada: {
-    backgroundColor: colors.brand,
-  },
-  velo: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    backgroundColor: 'rgba(7, 59, 76, 0.45)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  marcoVacio: {
-    minHeight: 188,
-    borderRadius: radius.lg,
-    borderWidth: 1.5,
-    borderStyle: 'dashed',
-    borderColor: colors.borderStrong,
-    backgroundColor: colors.surfaceAlt,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.lg,
-    gap: 5,
-    ...clayShadowSoft,
-  },
-  marcoPresionado: {
-    backgroundColor: colors.accentSoft,
-    borderColor: colors.accent,
-  },
-  camaraCirculo: {
-    width: 68,
-    height: 68,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surface,
-    borderWidth: 1.5,
-    borderColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.xs,
-    ...clayShadowSoft,
-  },
-  error: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.xs,
-  },
-  textoError: {
-    flex: 1,
-  },
-});

@@ -1,6 +1,7 @@
 import Constants from 'expo-constants';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { Alert, View } from 'react-native';
 
 import {
   Alerta,
@@ -15,14 +16,16 @@ import {
   StatCard,
   Texto,
 } from '@/components/ui';
-import { clayShadowSoft, colors, radius, spacing } from '@/constants/ui';
+import { colors } from '@/constants/ui';
 import { useApp } from '@/context/AppProvider';
+import { useSesion } from '@/context/sesion';
 import { mensajeDeError } from '@/services/errors';
 import { probarConexion } from '@/services/medidoresService';
 import { formatearFechaHora, iniciales } from '@/utils/format';
 import { normalizarUrlApi, urlEsLocal } from '@/utils/url';
 
 export default function PerfilScreen() {
+  const { usuario, nombre } = useSesion();
   const {
     sesion,
     enLinea,
@@ -46,6 +49,7 @@ export default function PerfilScreen() {
   const [probando, setProbando] = useState(false);
   const [errorUrl, setErrorUrl] = useState<string | null>(null);
   const [mensajeUrl, setMensajeUrl] = useState<string | null>(null);
+  const router = useRouter();
 
   if (!sesion) return null;
 
@@ -102,7 +106,7 @@ export default function PerfilScreen() {
   function confirmarCierre() {
     Alert.alert(
       '¿Cerrar la jornada?',
-      'Las lecturas y los borradores guardados en este teléfono se conservan. Para volver a entrar necesitarás tu código y tu clave.',
+      'Las lecturas, fotos y borradores guardados en este teléfono se conservan. Para volver a entrar necesitarás tu cuenta Firebase y el código de técnico.',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -118,15 +122,15 @@ export default function PerfilScreen() {
     <AppScreen>
       <AppHeader marca titulo="Mi perfil" subtitulo="Datos del técnico y conexión con la oficina." />
 
-      <Card estilo={estilos.perfil}>
-        <View style={estilos.avatar}>
+      <Card className="flex-row items-center gap-3 bg-indigo-50">
+        <View className="h-[66px] w-[66px] items-center justify-center rounded-full border border-white bg-teal-100 shadow-sm">
           <Texto variante="encabezado" color={colors.accentDark}>
-            {iniciales(sesion.nombre)}
+            {iniciales(nombre)}
           </Texto>
         </View>
-        <View style={estilos.perfilTextos}>
-          <Texto variante="subtitulo">{sesion.nombre}</Texto>
-          <View style={estilos.perfilMeta}>
+        <View className="flex-1 gap-1">
+          <Texto variante="subtitulo">{nombre}</Texto>
+          <View className="flex-row flex-wrap gap-1">
             <Badge texto={sesion.codigoTecnico} tono="marca" icono="id-card-outline" />
             <Badge texto={`Zona ${sesion.zona}`} tono="neutral" icono="location-outline" />
           </View>
@@ -136,7 +140,43 @@ export default function PerfilScreen() {
         </View>
       </Card>
 
-      <View style={estilos.filaStats}>
+      <View className="gap-3">
+        <SectionTitle titulo="Cuenta Firebase" descripcion="Identidad autenticada para esta sesión." />
+        <Card className="gap-1 py-2">
+          <InfoRow etiqueta="Nombre de perfil" valor={nombre} icono="person-outline" />
+          <InfoRow etiqueta="Correo" valor={usuario?.email ?? 'No disponible'} icono="mail-outline" />
+          <InfoRow
+            etiqueta="Verificación"
+            valor={usuario?.emailVerified ? 'Correo verificado' : 'Pendiente'}
+            color={usuario?.emailVerified ? colors.success : colors.warning}
+            icono="shield-checkmark-outline"
+          />
+          <InfoRow
+            etiqueta="Cuenta creada"
+            valor={usuario?.metadata.creationTime ? formatearFechaHora(usuario.metadata.creationTime) : 'No disponible'}
+            icono="calendar-outline"
+          />
+          <InfoRow
+            etiqueta="Último ingreso"
+            valor={usuario?.metadata.lastSignInTime ? formatearFechaHora(usuario.metadata.lastSignInTime) : 'No disponible'}
+            icono="time-outline"
+          />
+          <Boton
+            titulo="Editar perfil"
+            onPress={() => router.push('/editar-perfil')}
+            variante="secundario"
+            icono="person-circle-outline"
+          />
+          <Boton
+            titulo="Cambiar contraseña"
+            onPress={() => router.push('/cambiar-clave')}
+            variante="secundario"
+            icono="key-outline"
+          />
+        </Card>
+      </View>
+
+      <View className="flex-row gap-2">
         <StatCard
           valor={pendientes}
           etiqueta="Por enviar"
@@ -160,20 +200,18 @@ export default function PerfilScreen() {
         />
       </View>
 
-      <View style={estilos.seccion}>
+      <View className="gap-3">
         <SectionTitle
           titulo="Sincronización"
           descripcion="La app reintenta sola cada 30 segundos y al volver a primer plano."
         />
-        <Card estilo={estilos.syncCard}>
-          <View style={estilos.syncFila}>
+        <Card className="gap-2">
+          <View className="flex-row items-center gap-2">
             <View
-              style={[
-                estilos.punto,
-                { backgroundColor: enLinea ? colors.success : colors.warning },
-              ]}
+              className="h-2.5 w-2.5 rounded-full"
+              style={{ backgroundColor: enLinea ? colors.success : colors.warning }}
             />
-            <Texto variante="cuerpoFuerte" style={estilos.syncTexto}>
+            <Texto variante="cuerpoFuerte" className="flex-1">
               {enLinea ? 'Conectado a la red' : 'Sin conexión'}
             </Texto>
             <Badge
@@ -215,12 +253,12 @@ export default function PerfilScreen() {
         </Alerta>
       ) : null}
 
-      <View style={estilos.seccion}>
+      <View className="gap-3">
         <SectionTitle
           titulo="Sistema de oficina"
           descripcion="Dirección del servidor que entrega medidores y recibe las lecturas."
         />
-        <Card estilo={estilos.apiCard}>
+        <Card className="gap-3">
           {urlPorEntorno ? (
             <Alerta tono="info" titulo="URL fijada al compilar">
               La app usa <Texto variante="mono">{apiUrl}</Texto> porque existe la variable
@@ -247,7 +285,7 @@ export default function PerfilScreen() {
             testID="perfil-url-api"
           />
 
-          <View style={estilos.filaBotones}>
+          <View className="flex-row gap-2">
             <Boton
               titulo="Probar conexión"
               onPress={() => void probar()}
@@ -255,7 +293,7 @@ export default function PerfilScreen() {
               icono="pulse-outline"
               cargando={probando}
               anchoCompleto={false}
-              estilo={estilos.botonMitad}
+              className="flex-1"
             />
             <Boton
               titulo="Guardar URL"
@@ -264,7 +302,7 @@ export default function PerfilScreen() {
               cargando={guardando}
               deshabilitado={urlPorEntorno}
               anchoCompleto={false}
-              estilo={estilos.botonMitad}
+              className="flex-1"
             />
           </View>
 
@@ -292,9 +330,9 @@ export default function PerfilScreen() {
         </Card>
       </View>
 
-      <View style={estilos.seccion}>
+      <View className="gap-3">
         <SectionTitle titulo="Sobre AquaRuta" />
-        <Card estilo={estilos.aboutCard}>
+        <Card className="gap-1 py-2">
           <InfoRow etiqueta="Versión" valor={version} icono="information-circle-outline" />
           <InfoRow
             etiqueta="Almacenamiento"
@@ -319,72 +357,3 @@ export default function PerfilScreen() {
     </AppScreen>
   );
 }
-
-const estilos = StyleSheet.create({
-  perfil: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    backgroundColor: colors.surfaceBrand,
-  },
-  avatar: {
-    width: 66,
-    height: 66,
-    borderRadius: 33,
-    backgroundColor: colors.accentSoft,
-    borderWidth: 1.5,
-    borderColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...clayShadowSoft,
-  },
-  perfilTextos: {
-    flex: 1,
-    gap: spacing.xs,
-  },
-  perfilMeta: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
-  },
-  filaStats: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  seccion: {
-    gap: spacing.md,
-  },
-  syncCard: {
-    gap: spacing.sm,
-  },
-  syncFila: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  syncTexto: {
-    flex: 1,
-  },
-  punto: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  apiCard: {
-    gap: spacing.md,
-  },
-  filaBotones: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  botonMitad: {
-    flex: 1,
-  },
-  aboutCard: {
-    paddingVertical: spacing.sm,
-    gap: spacing.xs,
-  },
-  nota: {
-    borderRadius: radius.sm,
-  },
-});

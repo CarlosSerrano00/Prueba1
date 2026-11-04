@@ -2,13 +2,13 @@ import { Ionicons } from '@expo/vector-icons';
 import {
   ActivityIndicator,
   Pressable,
-  StyleSheet,
   View,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
+import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withSpring, type SharedValue } from 'react-native-reanimated';
 
-import { clayBorder, clayShadowSoft, colors, minTouch, radius, spacing } from '../../constants/ui';
+import { colors } from '../../constants/ui';
 import { Texto } from './Texto';
 
 type Icono = keyof typeof Ionicons.glyphMap;
@@ -24,6 +24,7 @@ interface BotonProps {
   deshabilitado?: boolean;
   anchoCompleto?: boolean;
   estilo?: StyleProp<ViewStyle>;
+  className?: string;
   accessibilityLabel?: string;
   testID?: string;
 }
@@ -80,99 +81,57 @@ export function Boton({
   deshabilitado = false,
   anchoCompleto = true,
   estilo,
+  className,
   accessibilityLabel,
   testID,
 }: BotonProps) {
   const paleta = paletas[variante];
   const inactivo = deshabilitado || cargando;
+  const reducirMovimiento = useReducedMotion();
+  const escala = useSharedValue(1);
+  const estiloAnimado = useAnimatedStyle(() => ({
+    transform: [{ scale: escala.value }],
+  }));
 
   return (
-    <Pressable
-      onPress={onPress}
-      disabled={inactivo}
-      accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel ?? titulo}
-      accessibilityState={{ disabled: inactivo, busy: cargando }}
-      testID={testID}
-      android_ripple={{ color: paleta.ripple }}
-      style={({ pressed }) => [
-        estilos.base,
-        variante === 'fantasma' && estilos.fantasma,
-        {
-          backgroundColor: inactivo ? colors.disabled : paleta.fondo,
-          borderColor: inactivo ? colors.disabled : paleta.borde,
-          opacity: pressed && !inactivo ? 0.9 : 1,
-          transform: [{ scale: pressed && !inactivo ? 0.97 : 1 }],
-        },
-        anchoCompleto ? estilos.completo : estilos.ajustado,
-        estilo,
-      ]}
-    >
-      <View pointerEvents="none" style={estilos.brillo} />
-      <View style={estilos.contenido}>
-        {cargando ? (
-          <ActivityIndicator
-            size="small"
-            color={variante === 'secundario' || variante === 'fantasma' ? colors.brand : colors.white}
-          />
-        ) : (
-          <>
-            {icono ? (
-              <Ionicons name={icono} size={20} color={paleta.texto} style={estilos.icono} />
-            ) : null}
-            <Texto variante="cuerpoFuerte" color={paleta.texto} style={estilos.titulo}>
-              {titulo}
-            </Texto>
-            {iconoDerecha ? (
-              <Ionicons name={iconoDerecha} size={20} color={paleta.texto} style={estilos.icono} />
-            ) : null}
-          </>
-        )}
-      </View>
-    </Pressable>
+    <Animated.View style={estiloAnimado}>
+      <Pressable
+        onPress={onPress}
+        disabled={inactivo}
+        onPressIn={() => animarEscala(escala, inactivo || reducirMovimiento ? 1 : 0.97, !reducirMovimiento)}
+        onPressOut={() => animarEscala(escala, 1, !reducirMovimiento)}
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel ?? titulo}
+        accessibilityState={{ disabled: inactivo, busy: cargando }}
+        testID={testID}
+        android_ripple={{ color: paleta.ripple }}
+        className={`clay-raised min-h-12 justify-center overflow-hidden rounded-[20px] border px-4 shadow-md ${
+          variante === 'fantasma' ? 'self-start border-0 shadow-none' : ''
+        } ${anchoCompleto ? 'self-stretch' : 'self-start'} ${inactivo ? 'opacity-55' : ''} ${className ?? ''}`}
+        style={[{ backgroundColor: inactivo ? colors.disabled : paleta.fondo }, estilo]}
+      >
+        <View pointerEvents="none" className="absolute left-2.5 right-2.5 top-0.5 h-[38%] rounded-full bg-white/10" />
+        <View className="flex-row items-center justify-center gap-2">
+          {cargando ? (
+            <ActivityIndicator
+              size="small"
+              color={variante === 'secundario' || variante === 'fantasma' ? colors.brand : colors.white}
+            />
+          ) : (
+            <>
+              {icono ? <Ionicons name={icono} size={20} color={paleta.texto} style={{ marginTop: -1 }} /> : null}
+              <Texto variante="cuerpoFuerte" color={paleta.texto} className="shrink">
+                {titulo}
+              </Texto>
+              {iconoDerecha ? <Ionicons name={iconoDerecha} size={20} color={paleta.texto} style={{ marginTop: -1 }} /> : null}
+            </>
+          )}
+        </View>
+      </Pressable>
+    </Animated.View>
   );
 }
 
-const estilos = StyleSheet.create({
-  base: {
-    minHeight: minTouch,
-    borderRadius: radius.lg,
-    ...clayBorder,
-    paddingHorizontal: spacing.lg,
-    justifyContent: 'center',
-    overflow: 'hidden',
-    ...clayShadowSoft,
-  },
-  fantasma: {
-    borderWidth: 0,
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  brillo: {
-    position: 'absolute',
-    top: 2,
-    left: 10,
-    right: 10,
-    height: '38%',
-    borderRadius: radius.pill,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-  },
-  completo: {
-    alignSelf: 'stretch',
-  },
-  ajustado: {
-    alignSelf: 'flex-start',
-  },
-  contenido: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-  },
-  icono: {
-    marginTop: -1,
-  },
-  titulo: {
-    flexShrink: 1,
-  },
-});
+function animarEscala(escala: SharedValue<number>, valor: number, animar: boolean) {
+  escala.value = animar ? withSpring(valor) : valor;
+}

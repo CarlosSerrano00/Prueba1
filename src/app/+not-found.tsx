@@ -1,15 +1,15 @@
 import { useRouter } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import { AppScreen, Boton, Texto } from '@/components/ui';
-import { colors, spacing } from '@/constants/ui';
+import { colors } from '@/constants/ui';
 
 export default function NotFoundScreen() {
   const router = useRouter();
 
   return (
     <AppScreen>
-      <View style={estilos.centro}>
+      <View className="flex-1 items-center justify-center gap-3 py-12">
         <Texto variante="display" color={colors.accent}>
           404
         </Texto>
@@ -29,13 +29,3 @@ export default function NotFoundScreen() {
     </AppScreen>
   );
 }
-
-const estilos = StyleSheet.create({
-  centro: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.md,
-    paddingVertical: spacing.huge,
-  },
-});

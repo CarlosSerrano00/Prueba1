@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import {
   Alerta,
@@ -15,7 +15,7 @@ import {
   SectionTitle,
   Texto,
 } from '@/components/ui';
-import { colors, spacing } from '@/constants/ui';
+import { colors } from '@/constants/ui';
 import { useApp } from '@/context/AppProvider';
 import { mensajeDeError } from '@/services/errors';
 import { consultarMedidor, listarRecientes } from '@/services/medidoresService';
@@ -74,7 +74,7 @@ export default function BuscarScreen() {
         subtitulo="Escribe el código de la etiqueta para consultar la oficina."
       />
 
-      <Card estilo={estilos.buscador}>
+      <Card className="gap-3 bg-indigo-50">
         <CampoTexto
           etiqueta="Código del medidor"
           valor={codigo}
@@ -97,9 +97,9 @@ export default function BuscarScreen() {
           deshabilitado={codigo.trim().length === 0}
         />
 
-        <View style={estilos.notaValidacion}>
+        <View className="flex-row items-start gap-1">
           <Ionicons name="shield-checkmark-outline" size={15} color={colors.success} />
-          <Texto variante="micro" color={colors.textMuted} style={estilos.notaTexto}>
+          <Texto variante="micro" color={colors.textMuted} className="flex-1">
             Si el código está incompleto, la app no consulta ni muestra datos de ningún medidor.
           </Texto>
         </View>
@@ -123,7 +123,7 @@ export default function BuscarScreen() {
         registrar la lectura en el medidor equivocado.
       </Alerta>
 
-      <View style={estilos.seccion}>
+      <View className="gap-3">
         <SectionTitle
           titulo="Medidores recientes"
           descripcion="Consultas guardadas en este teléfono."
@@ -137,7 +137,7 @@ export default function BuscarScreen() {
             compacto
           />
         ) : (
-          <View style={estilos.lista}>
+          <View className="gap-2">
             {recientes.map((medidor) => (
               <MeterCard
                 key={medidor.codigo}
@@ -151,24 +151,3 @@ export default function BuscarScreen() {
     </AppScreen>
   );
 }
-
-const estilos = StyleSheet.create({
-  buscador: {
-    gap: spacing.md,
-    backgroundColor: colors.surfaceBrand,
-  },
-  notaValidacion: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.xs,
-  },
-  notaTexto: {
-    flex: 1,
-  },
-  seccion: {
-    gap: spacing.md,
-  },
-  lista: {
-    gap: spacing.sm,
-  },
-});

@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 
 import {
   Alerta,
@@ -14,7 +14,7 @@ import {
   SectionTitle,
   Texto,
 } from '@/components/ui';
-import { colors, radius, spacing } from '@/constants/ui';
+import { colors } from '@/constants/ui';
 import { useApp } from '@/context/AppProvider';
 import { mensajeDeError } from '@/services/errors';
 import { consultarMedidor } from '@/services/medidoresService';
@@ -90,7 +90,7 @@ export default function MedidorScreen() {
     return (
       <AppScreen>
         <AppHeader titulo="Medidor" subtitulo={codigo} onBack={() => router.back()} />
-        <View style={estilos.cargando}>
+        <View className="flex-1 items-center justify-center gap-3 py-12">
           <ActivityIndicator size="large" color={colors.accent} />
           <Texto variante="caption" color={colors.textMuted}>
             Consultando el medidor…
@@ -125,27 +125,27 @@ export default function MedidorScreen() {
         derecha={<Badge texto={etiquetaEstadoMedidor(medidor.estado)} tono="marca" />}
       />
 
-      <Card estilo={estilos.hero}>
-        <View style={estilos.heroFila}>
-          <View style={estilos.iconoMedidor}>
+      <Card className="gap-3 bg-indigo-50">
+        <View className="flex-row items-center gap-3">
+          <View className="h-[58px] w-[58px] items-center justify-center rounded-xl border border-white bg-white">
             <Ionicons name="speedometer-outline" size={28} color={colors.accentDark} />
           </View>
-          <View style={estilos.heroTextos}>
+          <View className="flex-1 gap-px">
             <Texto variante="etiqueta" color={colors.textMuted}>
               Código de etiqueta
             </Texto>
-            <Texto variante="mono" peso="bold" color={colors.brand} style={estilos.codigo}>
+            <Texto variante="mono" peso="bold" color={colors.brand} className="text-[21px]">
               {medidor.codigo}
             </Texto>
           </View>
         </View>
-        <View style={estilos.direccion}>
+        <View className="flex-row items-start gap-2">
           <Ionicons name="location-outline" size={18} color={colors.accentDark} />
-          <Texto variante="cuerpo" style={estilos.direccionTexto}>
+          <Texto variante="cuerpo" className="flex-1">
             {medidor.direccion}
           </Texto>
         </View>
-        <View style={estilos.heroPie}>
+        <View className="flex-row items-center justify-between gap-2">
           <Texto variante="caption" color={colors.textMuted}>
             {medidor.sector}
           </Texto>
@@ -171,7 +171,7 @@ export default function MedidorScreen() {
           tono={lecturaMes.estadoEnvio === 'enviado' ? 'exito' : 'advertencia'}
           titulo={`Ya hay una lectura de ${nombrePeriodo(periodo)}`}
           accion={
-            <View style={estilos.filaBotones}>
+            <View className="flex-row flex-wrap gap-2">
               <Boton
                 titulo="Ver lectura"
                 onPress={() => router.push(`/lectura/${lecturaMes.localId}`)}
@@ -201,36 +201,36 @@ export default function MedidorScreen() {
         </Alerta>
       ) : null}
 
-      <View style={estilos.seccion}>
+      <View className="gap-3">
         <SectionTitle
           titulo="Datos del medidor"
           descripcion="Información enviada por el sistema de oficina."
         />
-        <Card estilo={estilos.datosCard}>
+        <Card className="py-2">
           <InfoRow etiqueta="Dirección" valor={medidor.direccion} icono="home-outline" />
-          <View style={estilos.divisor} />
+          <View className="h-px bg-slate-100" />
           <InfoRow etiqueta="Sector" valor={medidor.sector} icono="map-outline" />
-          <View style={estilos.divisor} />
+          <View className="h-px bg-slate-100" />
           <InfoRow etiqueta="Número de cuenta" valor={medidor.numeroCuenta} icono="receipt-outline" />
-          <View style={estilos.divisor} />
+          <View className="h-px bg-slate-100" />
           <InfoRow
             etiqueta="Estado"
             valor={etiquetaEstadoMedidor(medidor.estado)}
             icono="pulse-outline"
           />
-          <View style={estilos.divisor} />
+          <View className="h-px bg-slate-100" />
           <InfoRow
             etiqueta="Última lectura"
             valor={formatearMetros(medidor.ultimaLectura)}
             icono="water-outline"
           />
-          <View style={estilos.divisor} />
+          <View className="h-px bg-slate-100" />
           <InfoRow
             etiqueta="Fecha de última lectura"
             valor={formatearFecha(medidor.fechaUltimaLectura)}
             icono="calendar-outline"
           />
-          <View style={estilos.divisor} />
+          <View className="h-px bg-slate-100" />
           <InfoRow
             etiqueta="Consumo promedio mensual"
             valor={formatearMetros(medidor.consumoPromedioMensual)}
@@ -250,8 +250,8 @@ export default function MedidorScreen() {
         />
       </View>
 
-      <View style={estilos.referencia}>
-        <View style={estilos.referenciaItem}>
+      <View className="flex-row gap-3 rounded-3xl border border-white bg-slate-50 p-3">
+        <View className="flex-1 gap-0.5">
           <Texto variante="etiqueta" color={colors.textMuted}>
             Lectura anterior
           </Texto>
@@ -260,8 +260,8 @@ export default function MedidorScreen() {
             {formatearFecha(medidor.fechaUltimaLectura)}
           </Texto>
         </View>
-        <View style={estilos.referenciaSeparador} />
-        <View style={estilos.referenciaItem}>
+        <View className="w-px bg-slate-300" />
+        <View className="flex-1 gap-0.5">
           <Texto variante="etiqueta" color={colors.textMuted}>
             Promedio mensual
           </Texto>
@@ -272,9 +272,9 @@ export default function MedidorScreen() {
         </View>
       </View>
 
-      <Card estilo={estilos.sincronizacion}>
+      <Card className="flex-row items-center gap-2 rounded-3xl bg-slate-100 p-3">
         <Ionicons name="time-outline" size={18} color={colors.textMuted} />
-        <Texto variante="micro" color={colors.textMuted} style={estilos.sincronizacionTexto}>
+        <Texto variante="micro" color={colors.textMuted} className="flex-1">
           Copia guardada el {formatearFechaHora(medidor.consultadoEn)}. Desliza hacia abajo para
           actualizarla desde la oficina.
         </Texto>
@@ -291,98 +291,3 @@ export default function MedidorScreen() {
     </AppScreen>
   );
 }
-
-const estilos = StyleSheet.create({
-  cargando: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.md,
-    paddingVertical: spacing.huge,
-  },
-  hero: {
-    gap: spacing.md,
-    borderRadius: radius.lg,
-    backgroundColor: colors.surfaceBrand,
-  },
-  heroFila: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  iconoMedidor: {
-    width: 58,
-    height: 58,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-    borderWidth: 1.5,
-    borderColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  heroTextos: {
-    flex: 1,
-    gap: 1,
-  },
-  codigo: {
-    fontSize: 21,
-  },
-  direccion: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.sm,
-  },
-  direccionTexto: {
-    flex: 1,
-  },
-  heroPie: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing.sm,
-  },
-  seccion: {
-    gap: spacing.md,
-  },
-  datosCard: {
-    paddingVertical: spacing.sm,
-  },
-  divisor: {
-    height: 1,
-    backgroundColor: colors.surfaceAlt,
-  },
-  filaBotones: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  referencia: {
-    flexDirection: 'row',
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    borderWidth: 1.5,
-    borderColor: colors.white,
-    borderBottomColor: 'rgba(130,139,183,0.24)',
-    padding: spacing.md,
-    gap: spacing.md,
-  },
-  referenciaItem: {
-    flex: 1,
-    gap: 2,
-  },
-  referenciaSeparador: {
-    width: 1,
-    backgroundColor: colors.border,
-  },
-  sincronizacion: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    padding: spacing.md,
-    borderRadius: radius.lg,
-    backgroundColor: colors.surfaceAlt,
-  },
-  sincronizacionTexto: {
-    flex: 1,
-  },
-});

@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
-import { colors, radius, spacing } from '../../constants/ui';
+import { colors } from '../../constants/ui';
 import type { Medidor } from '../../types/models';
 import { formatearFechaHora, formatearMetros } from '../../utils/format';
 import { TarjetaPresionable } from './Card';
@@ -17,12 +17,12 @@ export function MeterCard({ medidor, onPress }: MeterCardProps) {
     <TarjetaPresionable
       onPress={onPress}
       accessibilityLabel={`Abrir medidor ${medidor.codigo}, ${medidor.direccion}`}
-      estilo={estilos.tarjeta}
+      className="flex-row items-center gap-3 rounded-3xl p-3"
     >
-      <View style={estilos.icono}>
+      <View className="h-[46px] w-[46px] items-center justify-center rounded-xl border border-white bg-indigo-100">
         <Ionicons name="speedometer-outline" size={21} color={colors.accentDark} />
       </View>
-      <View style={estilos.textos}>
+      <View className="flex-1 gap-px">
         <Texto variante="mono" peso="bold" color={colors.brand}>
           {medidor.codigo}
         </Texto>
@@ -40,27 +40,3 @@ export function MeterCard({ medidor, onPress }: MeterCardProps) {
     </TarjetaPresionable>
   );
 }
-
-const estilos = StyleSheet.create({
-  tarjeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    padding: spacing.md,
-    borderRadius: radius.lg,
-  },
-  icono: {
-    width: 46,
-    height: 46,
-    borderRadius: radius.sm,
-    backgroundColor: colors.surfaceBrand,
-    borderWidth: 1.5,
-    borderColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  textos: {
-    flex: 1,
-    gap: 1,
-  },
-});

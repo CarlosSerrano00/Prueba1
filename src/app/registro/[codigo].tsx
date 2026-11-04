@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Linking, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert, Linking, Pressable, View } from 'react-native';
 
 import {
   Alerta,
@@ -20,7 +20,7 @@ import {
   StepIndicator,
   Texto,
 } from '@/components/ui';
-import { colors, radius, spacing } from '@/constants/ui';
+import { colors } from '@/constants/ui';
 import { useApp } from '@/context/AppProvider';
 import {
   crearBorradorEnMemoria,
@@ -525,7 +525,7 @@ export default function RegistroScreen() {
     return (
       <AppScreen>
         <AppHeader titulo="Nueva lectura" subtitulo={codigo} onBack={() => router.back()} />
-        <View style={estilos.centro}>
+        <View className="flex-1 items-center justify-center gap-3 py-12">
           <ActivityIndicator size="large" color={colors.accent} />
           <Texto variante="caption" color={colors.textMuted}>
             Preparando la captura…
@@ -560,7 +560,7 @@ export default function RegistroScreen() {
           {conflicto.paso} de 3, actualizada el {formatearFechaHora(conflicto.actualizadoEn)}. Para
           empezar otro registro debes continuarla o descartarla.
         </Alerta>
-        <Card estilo={estilos.conflictoCard}>
+        <Card className="py-2">
           <InfoRow etiqueta="Medidor" valor={conflicto.codigoMedidor} icono="barcode-outline" />
           <InfoRow
             etiqueta="Paso guardado"
@@ -619,11 +619,11 @@ export default function RegistroScreen() {
 
       <StepIndicator paso={paso} />
 
-      <Card estilo={estilos.medidorMini}>
-        <View style={estilos.medidorIcono}>
+      <Card className="flex-row items-center gap-3 rounded-3xl p-3">
+        <View className="h-[46px] w-[46px] items-center justify-center rounded-xl border border-white bg-indigo-100">
           <Ionicons name="speedometer-outline" size={22} color={colors.accentDark} />
         </View>
-        <View style={estilos.medidorTextos}>
+        <View className="flex-1 gap-px">
           <Texto variante="mono" peso="bold" color={colors.brand}>
             {medidor.codigo}
           </Texto>
@@ -651,16 +651,16 @@ export default function RegistroScreen() {
 
       {paso === 1 ? (
         <>
-          <View style={estilos.seccion}>
+          <View className="gap-3">
             <SectionTitle
               titulo="Fecha de la lectura"
               descripcion="Define el periodo mensual que se usará para detectar duplicados."
             />
             {editando ? (
-              <Card estilo={estilos.fechaCard}>
-                <View style={estilos.fechaBloqueada}>
+              <Card className="gap-1">
+                <View className="flex-row items-center gap-3">
                   <Ionicons name="lock-closed-outline" size={20} color={colors.info} />
-                  <View style={estilos.fechaBloqueadaTexto}>
+                  <View className="flex-1 gap-1">
                     <Texto variante="cuerpoFuerte">
                       {formatearFecha(datos.fechaRegistro ?? editando.fechaRegistro)}
                     </Texto>
@@ -684,12 +684,12 @@ export default function RegistroScreen() {
             )}
           </View>
 
-          <View style={estilos.seccion}>
+          <View className="gap-3">
             <SectionTitle
               titulo="¿Qué encontraste?"
               descripcion="El estado define qué datos son obligatorios."
             />
-            <View style={estilos.listaOpciones}>
+            <View className="gap-2">
               <ChoiceCard
                 titulo="Normal"
                 descripcion="Se pudo ver y leer el medidor."
@@ -781,19 +781,19 @@ export default function RegistroScreen() {
           ) : null}
 
           <Card
-            estilo={[
-              estilos.consumoCard,
-              anomalia && estilos.consumoAnomalia,
-              !evaluacion.evaluable && estilos.consumoPendiente,
-            ]}
+            className="gap-1 border-l-4 p-3"
+            estilo={{
+              borderLeftColor: anomalia ? colors.danger : !evaluacion.evaluable ? colors.warning : colors.borderStrong,
+              backgroundColor: anomalia ? '#FFFBFB' : !evaluacion.evaluable ? '#FFFDF7' : undefined,
+            }}
           >
-            <View style={estilos.consumoFila}>
+            <View className="flex-row items-center gap-2">
               <Ionicons
                 name={anomalia ? 'warning' : evaluacion.evaluable ? 'analytics' : 'time-outline'}
                 size={20}
                 color={anomalia ? colors.danger : evaluacion.evaluable ? colors.success : colors.warning}
               />
-              <Texto variante="cuerpoFuerte" style={estilos.consumoTexto}>
+              <Texto variante="cuerpoFuerte" className="flex-1">
                 {evaluacion.consumo != null
                   ? `Consumo calculado: ${formatearMetros(evaluacion.consumo)}`
                   : 'Consumo aún no calculable'}
@@ -842,7 +842,7 @@ export default function RegistroScreen() {
             </Alerta>
           ) : null}
 
-          <Card estilo={estilos.fotoCard}>
+          <Card className="gap-3">
             <FotoMedidor
               uri={fotoUri}
               obligatoria={fotoObligatoria}
@@ -888,23 +888,24 @@ export default function RegistroScreen() {
               accessibilityRole="checkbox"
               accessibilityState={{ checked: datos.confirmacionRevision }}
               accessibilityLabel="Confirmo que revisé el medidor de agua"
+              className="flex-row items-start gap-3 rounded-3xl border border-white bg-slate-50 p-3"
               style={({ pressed }) => [
-                estilos.checkboxFila,
-                datos.confirmacionRevision && estilos.checkboxFilaActiva,
-                pressed && estilos.checkboxPresionada,
+                datos.confirmacionRevision ? { borderColor: colors.success, backgroundColor: colors.successSoft } : undefined,
+                pressed ? { opacity: 0.85 } : undefined,
               ]}
             >
               <View
-                style={[
-                  estilos.checkbox,
-                  datos.confirmacionRevision && estilos.checkboxMarcado,
-                ]}
+                className="mt-px h-[26px] w-[26px] items-center justify-center rounded-lg border-2"
+                style={{
+                  borderColor: datos.confirmacionRevision ? colors.success : colors.borderStrong,
+                  backgroundColor: datos.confirmacionRevision ? colors.success : 'transparent',
+                }}
               >
                 {datos.confirmacionRevision ? (
                   <Ionicons name="checkmark" size={17} color={colors.white} />
                 ) : null}
               </View>
-              <View style={estilos.checkboxTextos}>
+              <View className="flex-1 gap-1">
                 <Texto variante="cuerpoFuerte">Confirmo que revisé el medidor de agua</Texto>
                 <Texto variante="caption" color={colors.textMuted}>
                   Esta confirmación queda asociada a la lectura junto con la foto.
@@ -917,21 +918,21 @@ export default function RegistroScreen() {
             <Alerta tono="peligro">{errores.confirmacion}</Alerta>
           ) : null}
 
-          <View style={estilos.filaBotones}>
+          <View className="flex-row gap-2">
             <Boton
               titulo="Atrás"
               onPress={() => void irAPaso(1)}
               variante="secundario"
               icono="arrow-back"
               anchoCompleto={false}
-              estilo={estilos.botonMitad}
+              className="flex-1"
             />
             <Boton
               titulo="Revisar resumen"
               onPress={() => void continuarDesdeFoto()}
               icono="arrow-forward"
               anchoCompleto={false}
-              estilo={estilos.botonMitad}
+              className="flex-1"
             />
           </View>
         </>
@@ -951,7 +952,7 @@ export default function RegistroScreen() {
             </Alerta>
           ) : null}
 
-          <Card estilo={estilos.resumenCard}>
+          <Card className="py-2">
             <InfoRow
               etiqueta="Medidor"
               valor={medidor.codigo}
@@ -1022,7 +1023,7 @@ export default function RegistroScreen() {
           </Card>
 
           {datos.tipoEstado === 'inaccesible' ? (
-            <Card estilo={estilos.textoResumen}>
+            <Card className="gap-1">
               <Texto variante="etiqueta" color={colors.textMuted}>
                 Motivo de inaccesibilidad
               </Texto>
@@ -1031,7 +1032,7 @@ export default function RegistroScreen() {
           ) : null}
 
           {datos.tipoEstado === 'danado' ? (
-            <Card estilo={estilos.textoResumen}>
+            <Card className="gap-1">
               <Texto variante="etiqueta" color={colors.textMuted}>
                 Descripción del daño
               </Texto>
@@ -1039,8 +1040,8 @@ export default function RegistroScreen() {
             </Card>
           ) : null}
 
-          <Card estilo={estilos.fotoResumen}>
-            <View style={estilos.fotoResumenCabecera}>
+          <Card className="gap-2">
+            <View className="flex-row items-center justify-between gap-2">
               <Texto variante="cuerpoFuerte">Foto del medidor</Texto>
               <Badge
                 texto={fotoUri ? 'Adjunta' : fotoObligatoria ? 'Falta' : 'Sin foto'}
@@ -1049,7 +1050,7 @@ export default function RegistroScreen() {
               />
             </View>
             {fotoUri ? (
-              <Image source={{ uri: fotoUri }} style={estilos.fotoMini} contentFit="cover" />
+              <Image source={{ uri: fotoUri }} className="h-[170px] w-full rounded-3xl" contentFit="cover" />
             ) : (
               <Texto variante="caption" color={colors.textMuted}>
                 No se adjuntó una foto. En este registro no es obligatoria.
@@ -1061,7 +1062,7 @@ export default function RegistroScreen() {
             <Alerta tono="peligro" titulo="No se pudo guardar la lectura">
               {errorGuardar}
               {duplicada ? (
-                <View style={estilos.accionDuplicada}>
+                <View className="mt-2">
                   <Boton
                     titulo="Abrir la lectura existente"
                     onPress={() => router.replace(`/lectura/${duplicada.localId}`)}
@@ -1073,14 +1074,14 @@ export default function RegistroScreen() {
             </Alerta>
           ) : null}
 
-          <View style={estilos.filaBotones}>
+          <View className="flex-row gap-2">
             <Boton
               titulo="Atrás"
               onPress={() => void irAPaso(2)}
               variante="secundario"
               icono="arrow-back"
               anchoCompleto={false}
-              estilo={estilos.botonMitad}
+              className="flex-1"
               deshabilitado={guardando}
             />
             <Boton
@@ -1089,7 +1090,7 @@ export default function RegistroScreen() {
               icono="save-outline"
               cargando={guardando}
               anchoCompleto={false}
-              estilo={estilos.botonMitad}
+              className="flex-1"
             />
           </View>
 
@@ -1105,147 +1106,3 @@ export default function RegistroScreen() {
     </AppScreen>
   );
 }
-
-const estilos = StyleSheet.create({
-  centro: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.md,
-    paddingVertical: spacing.huge,
-  },
-  medidorMini: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    padding: spacing.md,
-    borderRadius: radius.lg,
-  },
-  medidorIcono: {
-    width: 46,
-    height: 46,
-    borderRadius: radius.sm,
-    backgroundColor: colors.surfaceBrand,
-    borderWidth: 1.5,
-    borderColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  medidorTextos: {
-    flex: 1,
-    gap: 1,
-  },
-  seccion: {
-    gap: spacing.md,
-  },
-  fechaCard: {
-    gap: spacing.xs,
-  },
-  fechaBloqueada: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  fechaBloqueadaTexto: {
-    flex: 1,
-    gap: 2,
-  },
-  listaOpciones: {
-    gap: spacing.sm,
-  },
-  consumoCard: {
-    gap: spacing.xs,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.borderStrong,
-    padding: spacing.md,
-  },
-  consumoAnomalia: {
-    borderLeftColor: colors.danger,
-    backgroundColor: '#FFFBFB',
-  },
-  consumoPendiente: {
-    borderLeftColor: colors.warning,
-    backgroundColor: '#FFFDF7',
-  },
-  consumoFila: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  consumoTexto: {
-    flex: 1,
-  },
-  fotoCard: {
-    gap: spacing.md,
-  },
-  checkboxFila: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.md,
-    borderWidth: 1.5,
-    borderColor: colors.white,
-    borderBottomColor: 'rgba(130,139,183,0.24)',
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: spacing.md,
-  },
-  checkboxFilaActiva: {
-    borderColor: colors.success,
-    backgroundColor: colors.successSoft,
-  },
-  checkboxPresionada: {
-    opacity: 0.85,
-  },
-  checkbox: {
-    width: 26,
-    height: 26,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: colors.borderStrong,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 1,
-  },
-  checkboxMarcado: {
-    backgroundColor: colors.success,
-    borderColor: colors.success,
-  },
-  checkboxTextos: {
-    flex: 1,
-    gap: 2,
-  },
-  filaBotones: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  botonMitad: {
-    flex: 1,
-  },
-  resumenCard: {
-    paddingVertical: spacing.sm,
-  },
-  textoResumen: {
-    gap: spacing.xs,
-  },
-  fotoResumen: {
-    gap: spacing.sm,
-  },
-  fotoResumenCabecera: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing.sm,
-  },
-  fotoMini: {
-    width: '100%',
-    height: 170,
-    borderRadius: radius.lg,
-    backgroundColor: colors.surfaceAlt,
-  },
-  accionDuplicada: {
-    marginTop: spacing.sm,
-  },
-  conflictoCard: {
-    paddingVertical: spacing.sm,
-  },
-});

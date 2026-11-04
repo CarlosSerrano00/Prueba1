@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
-import { colors, radius, spacing } from '../../constants/ui';
+import { colors } from '../../constants/ui';
 import type { Lectura } from '../../types/models';
 import {
   etiquetaEstadoEnvio,
@@ -47,10 +47,11 @@ export function LecturaCard({ lectura, onPress }: LecturaCardProps) {
       accessibilityLabel={`Lectura ${lectura.codigoMedidor}, ${etiquetaEstadoEnvio(
         lectura.estadoEnvio,
       )}`}
-      estilo={[estilos.tarjeta, { borderLeftColor: estado.color }]}
+      className="gap-2 border-l-[5px] p-3 rounded-3xl"
+      estilo={{ borderLeftColor: estado.color }}
     >
-      <View style={estilos.filaSuperior}>
-        <View style={estilos.codigoFila}>
+      <View className="flex-row items-center justify-between gap-2">
+        <View className="flex-shrink flex-row items-center gap-1">
           <Ionicons name={estado.icono} size={18} color={estado.color} />
           <Texto variante="mono" peso="bold" color={colors.brand}>
             {lectura.codigoMedidor}
@@ -59,8 +60,8 @@ export function LecturaCard({ lectura, onPress }: LecturaCardProps) {
         <Badge texto={etiquetaEstadoEnvio(lectura.estadoEnvio)} tono={estado.tono} icono={estado.icono} />
       </View>
 
-      <View style={estilos.filaDatos}>
-        <View style={estilos.dato}>
+      <View className="flex-row flex-wrap gap-4">
+        <View className="min-w-[82px] gap-px">
           <Texto variante="micro" color={colors.textMuted}>
             Periodo
           </Texto>
@@ -68,7 +69,7 @@ export function LecturaCard({ lectura, onPress }: LecturaCardProps) {
             {nombrePeriodo(lectura.periodo)}
           </Texto>
         </View>
-        <View style={estilos.dato}>
+        <View className="min-w-[82px] gap-px">
           <Texto variante="micro" color={colors.textMuted}>
             Consumo
           </Texto>
@@ -76,7 +77,7 @@ export function LecturaCard({ lectura, onPress }: LecturaCardProps) {
             {consumo}
           </Texto>
         </View>
-        <View style={estilos.dato}>
+        <View className="min-w-[82px] gap-px">
           <Texto variante="micro" color={colors.textMuted}>
             Estado
           </Texto>
@@ -86,12 +87,12 @@ export function LecturaCard({ lectura, onPress }: LecturaCardProps) {
         </View>
       </View>
 
-      <View style={estilos.filaInferior}>
-        <Texto variante="micro" color={colors.textSoft} style={estilos.fecha}>
+      <View className="flex-row flex-wrap items-center gap-2 border-t border-slate-200/50 pt-1">
+        <Texto variante="micro" color={colors.textSoft} className="shrink-0">
           {formatearFechaHora(lectura.fechaRegistro)}
         </Texto>
         {lectura.fotoUri ? (
-          <View style={estilos.indicador}>
+          <View className="flex-row items-center gap-1">
             <Ionicons name="camera" size={13} color={colors.textMuted} />
             <Texto variante="micro" color={colors.textMuted}>
               Foto
@@ -99,7 +100,7 @@ export function LecturaCard({ lectura, onPress }: LecturaCardProps) {
           </View>
         ) : null}
         {lectura.estadoVerificacion !== 'no_aplica' ? (
-          <Texto variante="micro" color={estado.color} numberOfLines={1} style={estilos.verificacion}>
+          <Texto variante="micro" color={estado.color} numberOfLines={1} className="flex-1 text-right">
             {etiquetaEstadoVerificacion(lectura.estadoVerificacion)}
           </Texto>
         ) : null}
@@ -107,54 +108,3 @@ export function LecturaCard({ lectura, onPress }: LecturaCardProps) {
     </TarjetaPresionable>
   );
 }
-
-const estilos = StyleSheet.create({
-  tarjeta: {
-    gap: spacing.sm,
-    borderLeftWidth: 5,
-    padding: spacing.md,
-    borderRadius: radius.lg,
-  },
-  filaSuperior: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing.sm,
-  },
-  codigoFila: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    flexShrink: 1,
-  },
-  filaDatos: {
-    flexDirection: 'row',
-    gap: spacing.lg,
-    flexWrap: 'wrap',
-  },
-  dato: {
-    gap: 1,
-    minWidth: 82,
-  },
-  filaInferior: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    flexWrap: 'wrap',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(183,194,222,0.45)',
-    paddingTop: spacing.xs,
-  },
-  fecha: {
-    flexShrink: 0,
-  },
-  indicador: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-  },
-  verificacion: {
-    flex: 1,
-    textAlign: 'right',
-  },
-});

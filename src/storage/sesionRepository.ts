@@ -6,6 +6,7 @@ interface SesionRow {
   nombre: string;
   zona: string;
   iniciada_en: string;
+  firebase_uid: string | null;
 }
 
 /**
@@ -15,7 +16,7 @@ interface SesionRow {
 export async function obtenerSesion(): Promise<Sesion | null> {
   const db = await getDb();
   const fila = await db.getFirstAsync<SesionRow>(
-    'SELECT codigo_tecnico, nombre, zona, iniciada_en FROM sesion WHERE id = 1',
+    'SELECT codigo_tecnico, nombre, zona, iniciada_en, firebase_uid FROM sesion WHERE id = 1',
   );
 
   if (!fila) return null;
@@ -25,18 +26,20 @@ export async function obtenerSesion(): Promise<Sesion | null> {
     nombre: fila.nombre,
     zona: fila.zona,
     iniciadaEn: fila.iniciada_en,
+    firebaseUid: fila.firebase_uid,
   };
 }
 
 export async function guardarSesion(sesion: Sesion): Promise<void> {
   const db = await getDb();
   await db.runAsync(
-    `INSERT OR REPLACE INTO sesion (id, codigo_tecnico, nombre, zona, iniciada_en)
-     VALUES (1, ?, ?, ?, ?)`,
+    `INSERT OR REPLACE INTO sesion (id, codigo_tecnico, nombre, zona, iniciada_en, firebase_uid)
+     VALUES (1, ?, ?, ?, ?, ?)`,
     sesion.codigoTecnico,
     sesion.nombre,
     sesion.zona,
     sesion.iniciadaEn,
+    sesion.firebaseUid ?? null,
   );
 }
 

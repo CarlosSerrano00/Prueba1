@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
-import { clayShadowSoft, colors, radius, spacing } from '../../constants/ui';
+import { colors } from '../../constants/ui';
 import type { PasoRegistro } from '../../types/models';
 import { Texto } from './Texto';
 
@@ -18,19 +18,17 @@ const PASOS_POR_DEFECTO = [
 
 export function StepIndicator({ paso, pasos = PASOS_POR_DEFECTO }: StepIndicatorProps) {
   return (
-    <View style={estilos.fila}>
+    <View className="flex-row items-start gap-1">
       {pasos.map((item, indice) => {
         const completado = paso > item.numero;
         const actual = paso === item.numero;
         return (
-          <View key={item.numero} style={estilos.pasoContenedor}>
-            <View style={estilos.pasoFila}>
+          <View key={item.numero} className="flex-1 gap-1">
+            <View className="flex-row items-center">
               <View
-                style={[
-                  estilos.circulo,
-                  completado && estilos.circuloCompletado,
-                  actual && estilos.circuloActual,
-                ]}
+                className={`h-8 w-8 items-center justify-center rounded-full border border-white shadow-sm ${
+                  completado ? 'bg-emerald-700' : actual ? 'bg-aqua-accent' : 'bg-aqua-surface'
+                }`}
               >
                 {completado ? (
                   <Ionicons name="checkmark" size={15} color={colors.white} />
@@ -45,7 +43,7 @@ export function StepIndicator({ paso, pasos = PASOS_POR_DEFECTO }: StepIndicator
                 )}
               </View>
               {indice < pasos.length - 1 ? (
-                <View style={[estilos.linea, completado && estilos.lineaCompletada]} />
+                <View className={`mx-1 h-1 flex-1 rounded-full ${completado ? 'bg-emerald-700' : 'bg-slate-200'}`} />
               ) : null}
             </View>
             <Texto
@@ -61,48 +59,3 @@ export function StepIndicator({ paso, pasos = PASOS_POR_DEFECTO }: StepIndicator
     </View>
   );
 }
-
-const estilos = StyleSheet.create({
-  fila: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.xs,
-  },
-  pasoContenedor: {
-    flex: 1,
-    gap: 5,
-  },
-  pasoFila: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  circulo: {
-    width: 32,
-    height: 32,
-    borderRadius: radius.pill,
-    borderWidth: 1.5,
-    borderColor: colors.white,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...clayShadowSoft,
-  },
-  circuloActual: {
-    backgroundColor: colors.accent,
-    borderColor: colors.white,
-  },
-  circuloCompletado: {
-    backgroundColor: colors.success,
-    borderColor: colors.white,
-  },
-  linea: {
-    flex: 1,
-    height: 5,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surfaceAlt,
-    marginHorizontal: 4,
-  },
-  lineaCompletada: {
-    backgroundColor: colors.success,
-  },
-});

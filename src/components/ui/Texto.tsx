@@ -1,6 +1,6 @@
-import { StyleSheet, Text, type TextProps } from 'react-native';
+import { Text, type TextProps } from 'react-native';
 
-import { colors, fonts, fontSize } from '../../constants/ui';
+import { colors } from '../../constants/ui';
 
 export type VarianteTexto =
   | 'display'
@@ -19,99 +19,38 @@ interface TextoProps extends TextProps {
   color?: string;
   peso?: 'regular' | 'medium' | 'bold';
   centrado?: boolean;
+  className?: string;
 }
+
+const clasesPorVariante: Record<VarianteTexto, string> = {
+  display: 'text-4xl leading-[42px] font-bold',
+  titulo: 'text-2xl leading-[31px] font-bold tracking-tight',
+  encabezado: 'text-xl leading-[26px] font-bold',
+  subtitulo: 'text-lg leading-6 font-semibold',
+  cuerpo: 'text-[15px] leading-[22px]',
+  cuerpoFuerte: 'text-[15px] leading-[22px] font-semibold',
+  etiqueta: 'text-[11px] leading-[15px] font-bold tracking-[0.8px] uppercase',
+  caption: 'text-[13px] leading-[19px]',
+  micro: 'text-[11px] leading-[15px]',
+  mono: 'font-mono text-[13px] leading-[19px]',
+};
 
 export function Texto({
   variante = 'cuerpo',
   color = colors.text,
   peso,
   centrado,
+  className,
   style,
   ...props
 }: TextoProps) {
+  const pesoClase = peso === 'bold' ? 'font-bold' : peso === 'medium' ? 'font-medium' : '';
+
   return (
     <Text
       {...props}
-      style={[
-        estilos.base,
-        variantes[variante],
-        peso === 'bold' && estilos.bold,
-        peso === 'medium' && estilos.medium,
-        centrado && estilos.centrado,
-        { color },
-        style,
-      ]}
+      className={`font-sans ${clasesPorVariante[variante]} ${pesoClase} ${centrado ? 'text-center' : ''} ${className ?? ''}`}
+      style={[{ color, includeFontPadding: false }, style]}
     />
   );
 }
-
-const estilos = StyleSheet.create({
-  base: {
-    fontFamily: fonts.regular,
-    includeFontPadding: false,
-  },
-  bold: {
-    fontFamily: fonts.medium,
-    fontWeight: '700',
-  },
-  medium: {
-    fontFamily: fonts.medium,
-    fontWeight: '500',
-  },
-  centrado: {
-    textAlign: 'center',
-  },
-});
-
-const variantes = StyleSheet.create({
-  display: {
-    fontSize: fontSize.display,
-    lineHeight: 42,
-    fontWeight: '700',
-  },
-  titulo: {
-    fontSize: fontSize.xxl,
-    lineHeight: 31,
-    fontWeight: '700',
-    letterSpacing: -0.3,
-  },
-  encabezado: {
-    fontSize: fontSize.xl,
-    lineHeight: 26,
-    fontWeight: '700',
-  },
-  subtitulo: {
-    fontSize: fontSize.lg,
-    lineHeight: 24,
-    fontWeight: '600',
-  },
-  cuerpo: {
-    fontSize: fontSize.md,
-    lineHeight: 22,
-  },
-  cuerpoFuerte: {
-    fontSize: fontSize.md,
-    lineHeight: 22,
-    fontWeight: '600',
-  },
-  etiqueta: {
-    fontSize: fontSize.xs,
-    lineHeight: 15,
-    fontWeight: '700',
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
-  },
-  caption: {
-    fontSize: fontSize.sm,
-    lineHeight: 19,
-  },
-  micro: {
-    fontSize: fontSize.xs,
-    lineHeight: 15,
-  },
-  mono: {
-    fontFamily: fonts.mono,
-    fontSize: fontSize.sm,
-    lineHeight: 19,
-  },
-});

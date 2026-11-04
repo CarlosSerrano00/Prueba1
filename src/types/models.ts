@@ -23,6 +23,7 @@ export interface Sesion {
   nombre: string;
   zona: string;
   iniciadaEn: string;
+  firebaseUid?: string | null;
 }
 
 export interface Medidor {
