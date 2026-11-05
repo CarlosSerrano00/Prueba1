@@ -2,9 +2,8 @@ import type { EstadoMedidor } from './validacionesEntidades';
 import type { Lectura } from '../types/models';
 
 /**
- * Contrato exacto con MockAPI. El seed de `mock-api/seed.json` es la fuente
- * de verdad: no se agregan campos de apoyo local (foto, motivo, consumo
- * calculado) al cuerpo remoto.
+ * Contrato de MockAPI: las lecturas incluyen las coordenadas de captura,
+ * pero excluyen los campos de apoyo que solo se usan localmente.
  */
 export const CAMPOS_MEDIDOR_REMOTO = [
   'codigo',
@@ -27,6 +26,9 @@ export const CAMPOS_LECTURA_REMOTA = [
   'tipoEstado',
   'lecturaActual',
   'estadoVerificacion',
+  'latitud',
+  'longitud',
+  'origenUbicacion',
 ] as const;
 
 export interface CuerpoMedidor {
@@ -64,5 +66,8 @@ export function cuerpoLecturaRemota(lectura: Lectura): Record<string, unknown> {
     tipoEstado: lectura.tipoEstado,
     lecturaActual: lectura.lecturaActual,
     estadoVerificacion: lectura.estadoVerificacion,
+    latitud: lectura.ubicacion?.latitud ?? null,
+    longitud: lectura.ubicacion?.longitud ?? null,
+    origenUbicacion: lectura.ubicacion?.origen ?? null,
   };
 }

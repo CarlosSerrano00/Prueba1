@@ -4,6 +4,7 @@ import { Pressable, View } from 'react-native';
 import { useApp } from '../../context/AppProvider';
 import { colors } from '../../constants/ui';
 import { Badge } from './Badge';
+import { EstadoAnimado } from './EstadoAnimado';
 import { Texto } from './Texto';
 
 export function ConnectionStrip() {
@@ -67,9 +68,12 @@ export function ConnectionStrip() {
       </View>
 
       {!enLinea ? (
-        <Texto variante="micro" color={colors.warning} className="pl-3">
-          Los registros se guardan en el teléfono y se enviarán al recuperar la conexión.
-        </Texto>
+        <View className="flex-row items-center gap-2 pl-1">
+          <EstadoAnimado tipo="sinConexion" tamano={52} />
+          <Texto variante="micro" color={colors.warning} className="flex-1">
+            Los registros se guardan en el teléfono y se enviarán al recuperar la conexión.
+          </Texto>
+        </View>
       ) : sincronizando ? (
         <Texto variante="micro" color={colors.info} className="pl-3">
           Sincronizando con el sistema de oficina…

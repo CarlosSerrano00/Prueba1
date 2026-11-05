@@ -62,9 +62,8 @@ No se incluyen datos de medidores dentro de las pantallas ni se simula un envío
 1. Ejecutar `npm run seed:mockapi` y confirmar 10 medidores y 3 lecturas.
 2. Ejecutar de nuevo el seed y confirmar que no crea duplicados.
 3. Consultar `GET /medidores?codigo=MED-100001` y comprobar los ocho campos.
-4. Crear una lectura temporal con los nueve campos, consultarla por `localId` y borrarla.
+4. Crear una lectura temporal con los doce campos, incluidas las coordenadas y su origen, consultarla por `localId` y borrarla.
 5. Actualizar un medidor temporal con `PUT` y borrarlo.
 6. Confirmar que `/recursos` devuelve 404 y que la app usa la raíz.
 7. Abrir la app, consultar un medidor y sincronizar una lectura.
 8. Opcional: `npm run mock:reset`, cambiar la URL en Perfil y repetir el flujo contra el servidor local.
-

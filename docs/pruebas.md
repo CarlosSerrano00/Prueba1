@@ -13,11 +13,11 @@ npm test
 Resultado de la última ejecución:
 
 ```text
-tests 57
+tests 61
 suites 17
-pass 57
+pass 61
 fail 0
-duration_ms ~1008
+duration_ms ~548
 ```
 
 ### Distribución
@@ -26,10 +26,10 @@ duration_ms ~1008
 |---|---:|---|
 | `tests/validators.test.ts` | 15 | R2, R5, R6 (foto), periodo y parsing de lectura |
 | `tests/consumo.test.ts` | 12 | R6: consumo, umbral, anomalía, casos sin datos |
-| `tests/syncEngine.test.ts` | 15 | R4, R6, R9, R10: idempotencia, reintentos, revisión y duplicado remoto |
-| `tests/validacionesEntidades.test.ts` | 13 | Fechas, rangos, longitudes, ficha de medidor y reglas de lectura |
-| `tests/contratoRemoto.test.ts` | 2 | Campos exactos de MockAPI |
-| **Total** | **57** | |
+| `tests/syncEngine.test.ts` | 16 | R4, R6, R9, R10: idempotencia, reintentos, revisión y duplicado remoto |
+| `tests/validacionesEntidades.test.ts` | 14 | Fechas, rangos, longitud, ubicación, ficha de medidor y reglas de lectura |
+| `tests/contratoRemoto.test.ts` | 3 | Campos exactos y coordenadas de MockAPI |
+| **Total** | **61** | |
 
 ### `tests/validators.test.ts`
 
@@ -105,6 +105,9 @@ El motor se prueba con dependencias falsas: no usa SQLite, `fetch` ni React.
   - acepta coma o punto y hasta tres decimales;
   - rechaza negativos, letras y valores fuera del rango;
   - acepta vacío solo donde el campo es opcional.
+- **Ubicación**
+  - acepta coordenadas GPS/manuales dentro de los rangos geográficos;
+  - rechaza latitud, longitud u origen inválidos.
 - **Ficha del medidor**
   - valida `codigo`, dirección, sector, cuenta y estado;
   - exige coherencia entre última lectura y fecha;
@@ -115,8 +118,17 @@ El motor se prueba con dependencias falsas: no usa SQLite, `fetch` ni React.
 
 ### `tests/contratoRemoto.test.ts`
 
-- El cuerpo de `POST /lecturas` contiene **exactamente** los nueve campos del seed; no incluye foto, motivo ni consumo calculado.
+- El cuerpo de `POST /lecturas` contiene **exactamente** los doce campos definidos, incluidas las coordenadas y su origen; no incluye foto, motivo ni consumo calculado.
 - El cuerpo de `PUT /medidores/:id` contiene **exactamente** los ocho campos de la ficha; no incluye `id` ni `consultadoEn`.
+
+### Verificación manual en dispositivo
+
+- Conceder y denegar el permiso de ubicación; confirmar que una denegación permite seleccionar una posición manualmente.
+- Registrar una lectura con coordenadas GPS, editar el punto tocando el mapa y moviendo el marcador, y confirmar que no se permite guardar sin ubicación.
+- Cerrar y reabrir un borrador para comprobar que conserva coordenadas y origen.
+- Abrir la lectura guardada y consultar de nuevo el medidor; ambos deben mostrar el marcador donde se registró la lectura.
+- Activar modo avión para comprobar el estado Lottie de desconexión y que la lectura sigue guardándose localmente; recuperar conexión y comprobar sincronización.
+- Ver las animaciones de carga del medidor y confirmación de lectura guardada.
 
 ### Cómo se ejecutan sin emulador
 
@@ -128,16 +140,17 @@ Ejecutadas en este entorno:
 
 | Comando | Resultado |
 |---|---|
-| `npm run typecheck` | Sin errores |
+| `npx tsc --noEmit` | Sin errores |
 | `npm run lint` | Sin errores ni advertencias |
+| `npx expo install --check` | Dependencias compatibles con SDK 57 |
 | `npx expo-doctor` | 21/21 comprobaciones correctas |
-| `npx expo export --platform android` | Bundle de producción generado (Hermes, ~3.6 MB) |
-| `npx eas-cli build -p android --profile preview` | Build `f02b8285-fbca-48dd-b9b2-b4a8dfce2b36` finalizado con estado `FINISHED` |
+| `npx expo export --platform android` | Bundle Android generado (Hermes, 5.3 MB) |
 
 El `expo export` confirma que el bundle de JavaScript compila para Android. **No** confirma que la app se ejecute correctamente en un dispositivo.
 
 ### Evidencia del APK
 
+- El build indicado a continuación es **anterior a la implementación del mapa y las animaciones**; esta tarea no generó ni instaló un APK nuevo.
 - Build: <https://expo.dev/accounts/carlosserrano00/projects/aquaruta-lecturas/builds/f02b8285-fbca-48dd-b9b2-b4a8dfce2b36>
 - APK descargado: 112.947.078 bytes, SHA-256 `945AA528EB689D8A071823735D64A1E87C73FCD0718221DEBA534195B5D98426`.
 - Se comprobó que el archivo es un ZIP/APK legible y que contiene `AndroidManifest.xml`, `resources.arsc`, cuatro archivos `classes*.dex` y librerías nativas para `arm64-v8a`, `armeabi-v7a`, `x86` y `x86_64`.
@@ -161,7 +174,7 @@ Resultado comprobado: 10 medidores y 3 lecturas. El comando se ejecutó dos vece
 | Campo Date de día | `fechaUltimaLectura` | conserva `YYYY-MM-DD` |
 | Campo Date de instante | `fechaRegistro` | conserva ISO completo |
 | Actualizar ficha | `PUT /medidores/:id` | 200 y datos actualizados |
-| Crear lectura | `POST /lecturas` con los 9 campos | 201 |
+| Crear lectura | `POST /lecturas` con los 12 campos | 201 |
 | Consultar por `localId` | `GET /lecturas?localId=...` | recupera la lectura |
 | Consultar por medidor/periodo | `GET /lecturas?codigoMedidor=MED-100008&periodo=2026-10` | 1 lectura semilla; el motor la usa para no duplicar |
 

@@ -14,6 +14,7 @@ import {
   LONGITUDES_MEDIDOR,
   parsearNumeroRango,
   RANGO_LECTURA,
+  esUbicacionLecturaValida,
   validarMedidorFormulario,
   type MedidorFormulario,
 } from '../src/utils/validacionesEntidades';
@@ -71,6 +72,21 @@ describe('fechas de negocio', () => {
 });
 
 describe('validaciones numéricas', () => {
+  it('valida coordenadas GPS o manuales dentro de los rangos geográficos', () => {
+    assert.equal(
+      esUbicacionLecturaValida({ latitud: -0.1807, longitud: -78.4678, origen: 'gps' }),
+      true,
+    );
+    assert.equal(
+      esUbicacionLecturaValida({ latitud: 91, longitud: 0, origen: 'manual' }),
+      false,
+    );
+    assert.equal(
+      esUbicacionLecturaValida({ latitud: 0, longitud: Number.NaN, origen: 'gps' }),
+      false,
+    );
+  });
+
   it('acepta coma o punto y hasta tres decimales', () => {
     const conComa = parsearNumeroRango('540,5', {
       etiqueta: 'La lectura',

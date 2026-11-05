@@ -7,6 +7,7 @@ import type {
   TipoEstadoLectura,
 } from '../types/models';
 import { DATOS_FORMULARIO_VACIOS } from '../types/models';
+import { esUbicacionLecturaValida } from '../utils/validacionesEntidades';
 
 export interface MedidorRow {
   codigo: string;
@@ -38,6 +39,9 @@ export interface LecturaRow {
   descripcion_dano: string | null;
   foto_uri: string | null;
   foto_url: string | null;
+  latitud: number | null;
+  longitud: number | null;
+  origen_ubicacion: string | null;
   confirmacion_revision: number;
   estado_verificacion: Lectura['estadoVerificacion'];
   estado_envio: Lectura['estadoEnvio'];
@@ -76,6 +80,11 @@ export function mapMedidor(row: MedidorRow): Medidor {
 }
 
 export function mapLectura(row: LecturaRow): Lectura {
+  const ubicacion = {
+    latitud: row.latitud,
+    longitud: row.longitud,
+    origen: row.origen_ubicacion,
+  };
   return {
     localId: row.local_id,
     idRemoto: row.id_remoto,
@@ -93,6 +102,7 @@ export function mapLectura(row: LecturaRow): Lectura {
     descripcionDano: row.descripcion_dano,
     fotoUri: row.foto_uri,
     fotoUrl: row.foto_url,
+    ubicacion: esUbicacionLecturaValida(ubicacion) ? ubicacion : null,
     confirmacionRevision: row.confirmacion_revision === 1,
     estadoVerificacion: row.estado_verificacion,
     estadoEnvio: row.estado_envio,
@@ -118,6 +128,7 @@ function parsearDatos(valor: string): DatosFormulario {
         typeof objeto.motivoInaccesible === 'string' ? objeto.motivoInaccesible : '',
       descripcionDano: typeof objeto.descripcionDano === 'string' ? objeto.descripcionDano : '',
       confirmacionRevision: objeto.confirmacionRevision === true,
+      ubicacion: esUbicacionLecturaValida(objeto.ubicacion) ? objeto.ubicacion : null,
     };
   } catch {
     return { ...DATOS_FORMULARIO_VACIOS };

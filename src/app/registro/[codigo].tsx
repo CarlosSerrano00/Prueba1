@@ -16,6 +16,7 @@ import {
   ChoiceCard,
   FotoMedidor,
   InfoRow,
+  MapaLectura,
   SectionTitle,
   StepIndicator,
   Texto,
@@ -41,6 +42,7 @@ import {
   obtenerLecturaPorId,
 } from '@/services/lecturasService';
 import { consultarMedidor } from '@/services/medidoresService';
+import { obtenerUbicacionActual, PermisoUbicacionError } from '@/services/ubicacionService';
 import { obtenerMedidor } from '@/storage/medidoresRepository';
 import type {
   Borrador,
@@ -88,6 +90,7 @@ function datosDesdeLectura(lectura: Lectura): DatosFormulario {
     motivoInaccesible: lectura.motivoInaccesible ?? '',
     descripcionDano: lectura.descripcionDano ?? '',
     confirmacionRevision: lectura.confirmacionRevision,
+    ubicacion: lectura.ubicacion,
   };
 }
 
@@ -134,6 +137,11 @@ export default function RegistroScreen() {
   const [fotoCargando, setFotoCargando] = useState(false);
   const [errorFoto, setErrorFoto] = useState<string | null>(null);
   const [permisoBloqueado, setPermisoBloqueado] = useState(false);
+  const [buscandoUbicacion, setBuscandoUbicacion] = useState(false);
+  const [errorUbicacion, setErrorUbicacion] = useState<string | null>(null);
+  const [permisoUbicacionBloqueado, setPermisoUbicacionBloqueado] = useState(false);
+  const solicitudUbicacionRef = useRef(false);
+  const ubicacionManualRef = useRef(false);
   const persistenciaRef = useRef<Promise<void>>(Promise.resolve());
   const lecturaObjetivoRef = useRef<Lectura | null>(null);
 
@@ -151,6 +159,10 @@ export default function RegistroScreen() {
       setErrores({});
       setErrorFoto(null);
       setPermisoBloqueado(false);
+      setErrorUbicacion(null);
+      setPermisoUbicacionBloqueado(false);
+      solicitudUbicacionRef.current = false;
+      ubicacionManualRef.current = false;
       setFotoUri(null);
       setFotoOriginal(null);
       setDraftId(null);
@@ -211,6 +223,7 @@ export default function RegistroScreen() {
           setDatos({
             ...DATOS_FORMULARIO_VACIOS,
             ...borrador.datos,
+            ubicacion: lecturaBorrador?.ubicacion ?? borrador.datos.ubicacion ?? null,
             fechaRegistro:
               borrador.datos.fechaRegistro ?? fechaLocalISO(new Date(borrador.creadoEn)),
           });
@@ -270,6 +283,35 @@ export default function RegistroScreen() {
       activo = false;
     };
   }, [borradorParam, codigo, editarParam, sesion]);
+
+  const capturarUbicacionGps = useCallback(async (automatica = false) => {
+    setBuscandoUbicacion(true);
+    setErrorUbicacion(null);
+    setPermisoUbicacionBloqueado(false);
+    try {
+      const ubicacion = await obtenerUbicacionActual();
+      if (automatica && ubicacionManualRef.current) return;
+      ubicacionManualRef.current = false;
+      setDatos((actual) => ({ ...actual, ubicacion }));
+      setErrores({});
+      setErrorGuardar(null);
+      setDuplicada(null);
+    } catch (fallo) {
+      if (automatica && ubicacionManualRef.current) return;
+      setErrorUbicacion(mensajeDeError(fallo));
+      setPermisoUbicacionBloqueado(
+        fallo instanceof PermisoUbicacionError && !fallo.puedeReintentar,
+      );
+    } finally {
+      setBuscandoUbicacion(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!listo || datos.ubicacion || solicitudUbicacionRef.current) return;
+    solicitudUbicacionRef.current = true;
+    void capturarUbicacionGps(true);
+  }, [capturarUbicacionGps, datos.ubicacion, listo]);
 
   const persistirBorrador = useCallback(
     async (pasoGuardar: PasoRegistro, cambios: Partial<Pick<Borrador, 'fotoUri'>> = {}) => {
@@ -434,6 +476,12 @@ export default function RegistroScreen() {
 
   async function guardar() {
     if (!medidor || !sesion) return;
+    if (!datos.ubicacion) {
+      setErrorUbicacion(
+        'La ubicación es obligatoria. Usa el GPS o selecciona manualmente un punto en el mapa.',
+      );
+      return;
+    }
     setGuardando(true);
     setErrorGuardar(null);
     setDuplicada(null);
@@ -1022,6 +1070,72 @@ export default function RegistroScreen() {
             />
           </Card>
 
+          <View className="gap-3">
+            <SectionTitle
+              titulo="Ubicación de la lectura"
+              descripcion="El GPS propone tu ubicación actual. También puedes tocar el mapa o arrastrar el marcador para ajustarla."
+              animacion="ubicacion"
+            />
+            <Card className="gap-3">
+              <View className="flex-row items-center gap-2">
+                <Ionicons
+                  name={datos.ubicacion?.origen === 'gps' ? 'navigate' : 'hand-left-outline'}
+                  size={19}
+                  color={datos.ubicacion ? colors.success : colors.warning}
+                />
+                <Texto variante="caption" color={datos.ubicacion ? colors.success : colors.warning}>
+                  {datos.ubicacion
+                    ? datos.ubicacion.origen === 'gps'
+                      ? 'Ubicación capturada por GPS'
+                      : 'Ubicación seleccionada manualmente'
+                    : buscandoUbicacion
+                      ? 'Obteniendo ubicación GPS…'
+                      : 'Falta registrar la ubicación'}
+                </Texto>
+              </View>
+              {datos.ubicacion ? (
+                <Texto variante="micro" color={colors.textMuted}>
+                  {datos.ubicacion.latitud.toFixed(6)}, {datos.ubicacion.longitud.toFixed(6)}
+                </Texto>
+              ) : null}
+              <MapaLectura
+                ubicacion={datos.ubicacion ?? null}
+                interactivo
+                onChange={(ubicacion) => {
+                  ubicacionManualRef.current = true;
+                  cambiarDatos({ ubicacion });
+                  setErrorUbicacion(null);
+                }}
+              />
+              <Boton
+                titulo="Usar mi ubicación GPS"
+                onPress={() => void capturarUbicacionGps()}
+                variante="secundario"
+                icono="navigate-outline"
+                cargando={buscandoUbicacion}
+                deshabilitado={guardando || buscandoUbicacion}
+              />
+              {permisoUbicacionBloqueado ? (
+                <Boton
+                  titulo="Abrir ajustes de ubicación"
+                  onPress={() => void Linking.openSettings()}
+                  variante="fantasma"
+                  icono="settings-outline"
+                />
+              ) : null}
+              {errorUbicacion ? (
+                <Alerta tono="advertencia" titulo="Ubicación pendiente">
+                  {errorUbicacion}
+                </Alerta>
+              ) : null}
+              {!datos.ubicacion ? (
+                <Texto variante="micro" color={colors.textMuted}>
+                  Para guardar la lectura debes capturar el GPS o elegir un punto del mapa.
+                </Texto>
+              ) : null}
+            </Card>
+          </View>
+
           {datos.tipoEstado === 'inaccesible' ? (
             <Card className="gap-1">
               <Texto variante="etiqueta" color={colors.textMuted}>
@@ -1091,6 +1205,7 @@ export default function RegistroScreen() {
               cargando={guardando}
               anchoCompleto={false}
               className="flex-1"
+              deshabilitado={guardando || !datos.ubicacion}
             />
           </View>
 

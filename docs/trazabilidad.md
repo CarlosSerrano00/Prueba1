@@ -243,7 +243,7 @@ Mapa entre cada requisito de la prueba, su criterio de aceptación, el código q
   - no reenvía una lectura ya enviada.
 - El mock permite simular fallos con `MOCK_FAIL_POSTS=3`.
 - Con el mock local, `POST /lecturas` responde 201; repetir el mismo `localId` responde 409 y otro medidor en el mismo periodo también responde 409. MockAPI no impone esas reglas; la app consulta antes de enviar.
-- `tests/contratoRemoto.test.ts`: el cuerpo de lectura contiene exactamente los nueve campos del seed y el medidor exactamente los ocho; no aparece `fotoUri`, `motivoInaccesible` ni `consumoCalculado`.
+- `tests/contratoRemoto.test.ts`: el cuerpo de lectura contiene exactamente los doce campos del contrato (incluidas coordenadas y origen) y el medidor exactamente los ocho; no aparece `fotoUri`, `motivoInaccesible` ni `consumoCalculado`.
 - Petición real a MockAPI: crear medidor temporal, actualizarlo con `PUT`, crear lectura, consultarla por `localId` y borrar ambos. La limpieza dejó 10 medidores y 3 lecturas.
 
 **Pendiente:** el corte real de red a mitad de un POST. El código está preparado para el caso “llegó pero no volvió la respuesta”.
@@ -267,7 +267,7 @@ Mapa entre cada requisito de la prueba, su criterio de aceptación, el código q
 
 **Evidencia**
 
-- `tests/syncEngine.test.ts`: 15 casos, incluidos el duplicado remoto por periodo y el mismo `localId`.
+- `tests/syncEngine.test.ts`: 16 casos, incluidos el duplicado remoto por periodo y el mismo `localId`.
 - El mock devuelve `409 DUPLICADO_PERIODO` y se probó con `curl`.
 - MockAPI no impone unicidad: se verificó `GET /lecturas?codigoMedidor=MED-100008&periodo=2026-10` y el motor evita el `POST`.
 - La base local rechaza el segundo `INSERT` aunque la comprobación previa se saltara.

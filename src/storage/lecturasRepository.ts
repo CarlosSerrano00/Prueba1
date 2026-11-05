@@ -11,7 +11,8 @@ import { mapLectura, type LecturaRow } from './mappers';
 const COLUMNAS = `local_id, id_remoto, codigo_medidor, medidor_id, codigo_tecnico,
   fecha_registro, periodo, tipo_estado, lectura_actual, ultima_lectura_referencia,
   consumo_calculado, consumo_promedio_referencia, motivo_inaccesible,
-  descripcion_dano, foto_uri, foto_url, confirmacion_revision,
+  descripcion_dano, foto_uri, foto_url, latitud, longitud, origen_ubicacion,
+  confirmacion_revision,
   estado_verificacion, estado_envio, intentos_envio, fecha_envio,
   mensaje_error, creado_en, actualizado_en`;
 
@@ -35,6 +36,9 @@ function valoresLectura(lectura: Lectura): (string | number | null)[] {
     lectura.descripcionDano,
     lectura.fotoUri,
     lectura.fotoUrl,
+    lectura.ubicacion?.latitud ?? null,
+    lectura.ubicacion?.longitud ?? null,
+    lectura.ubicacion?.origen ?? null,
     lectura.confirmacionRevision ? 1 : 0,
     lectura.estadoVerificacion,
     lectura.estadoEnvio,
@@ -49,7 +53,7 @@ function valoresLectura(lectura: Lectura): (string | number | null)[] {
 async function insertarLectura(db: Db, lectura: Lectura): Promise<void> {
   await db.runAsync(
     `INSERT INTO lecturas (${COLUMNAS})
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(local_id) DO UPDATE SET
        id_remoto = excluded.id_remoto,
        medidor_id = excluded.medidor_id,
@@ -63,6 +67,9 @@ async function insertarLectura(db: Db, lectura: Lectura): Promise<void> {
        descripcion_dano = excluded.descripcion_dano,
        foto_uri = excluded.foto_uri,
        foto_url = excluded.foto_url,
+       latitud = excluded.latitud,
+       longitud = excluded.longitud,
+       origen_ubicacion = excluded.origen_ubicacion,
        confirmacion_revision = excluded.confirmacion_revision,
        estado_verificacion = excluded.estado_verificacion,
        estado_envio = excluded.estado_envio,
@@ -323,6 +330,9 @@ export async function actualizarLecturaEditada(lectura: Lectura): Promise<void> 
        descripcion_dano = ?,
        foto_uri = ?,
        foto_url = ?,
+       latitud = ?,
+       longitud = ?,
+       origen_ubicacion = ?,
        confirmacion_revision = ?,
        estado_verificacion = ?,
        estado_envio = 'pendiente',
@@ -340,6 +350,9 @@ export async function actualizarLecturaEditada(lectura: Lectura): Promise<void> 
     lectura.descripcionDano,
     lectura.fotoUri,
     lectura.fotoUrl,
+    lectura.ubicacion?.latitud ?? null,
+    lectura.ubicacion?.longitud ?? null,
+    lectura.ubicacion?.origen ?? null,
     lectura.confirmacionRevision ? 1 : 0,
     lectura.estadoVerificacion,
     lectura.actualizadoEn,

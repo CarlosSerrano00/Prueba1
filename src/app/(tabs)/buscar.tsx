@@ -11,6 +11,7 @@ import {
   CampoTexto,
   Card,
   EmptyState,
+  EstadoAnimado,
   MeterCard,
   SectionTitle,
   Texto,
@@ -72,6 +73,7 @@ export default function BuscarScreen() {
         marca
         titulo="Buscar medidor"
         subtitulo="Escribe el código de la etiqueta para consultar la oficina."
+        derecha={<EstadoAnimado tipo="kpi" tamano={72} />}
       />
 
       <Card className="gap-3 bg-indigo-50">

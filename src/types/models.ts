@@ -51,6 +51,12 @@ export interface MedidorRemoto {
   consumoPromedioMensual: number | null;
 }
 
+export interface UbicacionLectura {
+  latitud: number;
+  longitud: number;
+  origen: 'gps' | 'manual';
+}
+
 export interface Lectura {
   localId: string;
   idRemoto: string | null;
@@ -68,6 +74,7 @@ export interface Lectura {
   descripcionDano: string | null;
   fotoUri: string | null;
   fotoUrl: string | null;
+  ubicacion: UbicacionLectura | null;
   confirmacionRevision: boolean;
   estadoVerificacion: EstadoVerificacion;
   estadoEnvio: EstadoEnvio;
@@ -89,6 +96,7 @@ export interface LecturaRemota {
   tipoEstado: TipoEstadoLectura;
   lecturaActual: number | null;
   estadoVerificacion: string | null;
+  ubicacion?: UbicacionLectura | null;
 }
 
 export interface DatosFormulario {
@@ -103,6 +111,7 @@ export interface DatosFormulario {
   motivoInaccesible: string;
   descripcionDano: string;
   confirmacionRevision: boolean;
+  ubicacion?: UbicacionLectura | null;
 }
 
 export interface Borrador {
@@ -149,4 +158,5 @@ export const DATOS_FORMULARIO_VACIOS: DatosFormulario = {
   motivoInaccesible: '',
   descripcionDano: '',
   confirmacionRevision: false,
+  ubicacion: null,
 };

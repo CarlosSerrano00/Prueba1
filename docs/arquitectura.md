@@ -78,7 +78,7 @@ Copia persistente de los datos de la ficha de R3:
 |---|---|
 | Identidad | `local_id` (PK), `id_remoto`, `codigo_medidor`, `medidor_id`, `codigo_tecnico` |
 | Tiempo | `fecha_registro`, `periodo` (`YYYY-MM`), `creado_en`, `actualizado_en` |
-| Captura | `tipo_estado`, `lectura_actual`, `motivo_inaccesible`, `descripcion_dano` |
+| Captura | `tipo_estado`, `lectura_actual`, `motivo_inaccesible`, `descripcion_dano`, `latitud`, `longitud`, `origen_ubicacion` |
 | Referencia | `ultima_lectura_referencia`, `consumo_promedio_referencia`, `consumo_calculado` |
 | Evidencia | `foto_uri`, `foto_url`, `confirmacion_revision` |
 | Verificación | `estado_verificacion` |
@@ -96,6 +96,12 @@ Es la última defensa contra dos lecturas del mismo medidor en el mismo mes (R10
 
 Un registro por captura en curso. Guarda `codigo_medidor`, `codigo_tecnico`, `paso` (1–3), los datos del formulario serializados en `datos_json`, la foto y, si se estaba corrigiendo, `lectura_local_id`.
 
+### Ubicación y mapa
+
+El esquema SQLite v3 conserva las coordenadas y su origen (`gps` o `manual`) en cada lectura. `expo-location` solicita permiso de ubicación en primer plano y propone automáticamente la posición actual. Si no se concede el permiso o el GPS no está disponible, el técnico puede marcar el punto en el mapa Leaflet (WebView + OpenStreetMap), tocando el mapa o moviendo el marcador. La lectura no se guarda sin coordenadas válidas. Las coordenadas sobreviven en borradores, se sincronizan con la lectura remota y se muestran al consultar la lectura o el medidor. El mapa requiere conexión para cargar Leaflet y las teselas de OpenStreetMap; el registro GPS permanece disponible sin conexión.
+
+`EstadoAnimado` presenta animaciones Lottie vinculadas a estados reales: carga de la ficha del medidor, lectura guardada y falta de conexión. Los JSON se mantienen en `assets/animations`.
+
 ### `configuracion`
 
 Pares clave/valor. Se usa para la URL del sistema de oficina (`url_api`).
@@ -104,12 +110,12 @@ Pares clave/valor. Se usa para la URL del sistema de oficina (`url_api`).
 
 La raíz por defecto es `https://6ae0a4a2be3bc8fead97a3b2.mockapi.io`; los recursos son `/medidores` y `/lecturas`. La ruta `/recursos` del panel de MockAPI **no** es un endpoint: devuelve 404.
 
-`src/utils/contratoRemoto.ts` es el único lugar que arma los cuerpos remotos. El seed `mock-api/seed.json` manda: no se agregan campos de apoyo local.
+`src/utils/contratoRemoto.ts` es el único lugar que arma los cuerpos remotos. El contrato de medidores coincide con el seed; las lecturas también envían las coordenadas necesarias para consultar el punto de captura.
 
 | Recurso | Campos remotos |
 |---|---|
 | `medidores` | `codigo`, `direccion`, `sector`, `numeroCuenta`, `estado`, `ultimaLectura`, `fechaUltimaLectura`, `consumoPromedioMensual` |
-| `lecturas` | `localId`, `medidorId`, `codigoMedidor`, `codigoTecnico`, `fechaRegistro`, `periodo`, `tipoEstado`, `lecturaActual`, `estadoVerificacion` |
+| `lecturas` | `localId`, `medidorId`, `codigoMedidor`, `codigoTecnico`, `fechaRegistro`, `periodo`, `tipoEstado`, `lecturaActual`, `estadoVerificacion`, `latitud`, `longitud`, `origenUbicacion` |
 
 `medidores.fechaUltimaLectura` se guarda como día `YYYY-MM-DD`; `lecturas.fechaRegistro` se envía como instante ISO. La foto, el motivo, la descripción del daño y el consumo calculado **no** viajan a MockAPI: quedan en SQLite y se usan para reglas locales.
 
@@ -243,7 +249,7 @@ Puntos importantes:
 
 - **Antes de enviar se busca el `localId`.** Si el POST llegó al servidor pero la respuesta se perdió, el siguiente intento encuentra la lectura y no la duplica.
 - **MockAPI no impone unicidad por medidor/periodo.** Por eso, si no aparece el `localId`, se consulta `GET /lecturas?codigoMedidor=...&periodo=...` y se evita el `POST` cuando ya hay otra lectura de ese mes.
-- **El cuerpo del POST usa solo los nueve campos del seed** (`cuerpoLecturaRemota`), no el modelo local completo. Lo mismo aplica al `PUT` del medidor.
+- **El cuerpo del POST usa los doce campos del contrato de lecturas** (`cuerpoLecturaRemota`), incluidas las coordenadas y su origen; excluye los datos que solo se usan localmente. Lo mismo aplica al `PUT` del medidor.
 - **Un 409 por `localId` no es un error definitivo**: significa que el envío anterior sí se registró.
 - **Un 409 por medidor/periodo también es revisión**: el mock local lo devuelve; MockAPI no lo garantiza, por eso la comprobación previa es obligatoria.
 - El motor es secuencial. Si se corta la red, se detiene y deja el resto pendiente para el próximo ciclo.

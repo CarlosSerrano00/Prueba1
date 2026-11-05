@@ -12,6 +12,7 @@ import {
   EmptyState,
   LecturaCard,
   SectionTitle,
+  SesionRequerida,
   Texto,
 } from '@/components/ui';
 import { colors } from '@/constants/ui';
@@ -59,7 +60,7 @@ export default function LecturasScreen() {
     }
   }
 
-  if (!sesion) return null;
+  if (!sesion) return <SesionRequerida />;
 
   const opciones: OpcionFiltro[] = [
     { valor: 'todas', etiqueta: `Todas (${totalLecturas})`, icono: 'albums-outline' },

@@ -1,7 +1,7 @@
 import * as SQLite from 'expo-sqlite';
 
 const NOMBRE_BASE = 'aquaruta.db';
-const VERSION_ESQUEMA = 2;
+const VERSION_ESQUEMA = 3;
 
 let basePromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
@@ -104,14 +104,25 @@ async function migrar(db: SQLite.SQLiteDatabase): Promise<void> {
           valor TEXT NOT NULL
         );
       `);
-      await db.execAsync(`PRAGMA user_version = ${VERSION_ESQUEMA};`);
+      await db.execAsync('PRAGMA user_version = 1;');
     });
   }
 
   if (versionActual < 2) {
     await db.withTransactionAsync(async () => {
       await db.execAsync('ALTER TABLE sesion ADD COLUMN firebase_uid TEXT;');
-      await db.execAsync(`PRAGMA user_version = ${VERSION_ESQUEMA};`);
+      await db.execAsync('PRAGMA user_version = 2;');
+    });
+  }
+
+  if (versionActual < 3) {
+    await db.withTransactionAsync(async () => {
+      await db.execAsync(`
+        ALTER TABLE lecturas ADD COLUMN latitud REAL;
+        ALTER TABLE lecturas ADD COLUMN longitud REAL;
+        ALTER TABLE lecturas ADD COLUMN origen_ubicacion TEXT;
+        PRAGMA user_version = ${VERSION_ESQUEMA};
+      `);
     });
   }
 }

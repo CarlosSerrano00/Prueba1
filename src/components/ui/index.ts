@@ -9,8 +9,11 @@ export { Card, InfoRow, SectionTitle, StatCard, TarjetaPresionable } from './Car
 export { ChoiceCard } from './ChoiceCard';
 export { ConnectionStrip } from './ConnectionStrip';
 export { EmptyState } from './EmptyState';
+export { EstadoAnimado } from './EstadoAnimado';
 export { FotoMedidor } from './FotoMedidor';
 export { LecturaCard } from './LecturaCard';
+export { MapaLectura } from './MapaLectura';
 export { MeterCard } from './MeterCard';
+export { SesionRequerida } from './SesionRequerida';
 export { StepIndicator } from './StepIndicator';
 export { Texto } from './Texto';

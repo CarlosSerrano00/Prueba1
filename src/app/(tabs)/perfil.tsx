@@ -13,6 +13,7 @@ import {
   Card,
   InfoRow,
   SectionTitle,
+  SesionRequerida,
   StatCard,
   Texto,
 } from '@/components/ui';
@@ -51,7 +52,7 @@ export default function PerfilScreen() {
   const [mensajeUrl, setMensajeUrl] = useState<string | null>(null);
   const router = useRouter();
 
-  if (!sesion) return null;
+  if (!sesion) return <SesionRequerida />;
 
   const version = Constants.expoConfig?.version ?? '1.0.0';
 

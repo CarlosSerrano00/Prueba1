@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import type { Lectura } from '../src/types/models';
+import { parsearLecturaRemota } from '../src/services/apiParsers';
 import {
   CAMPOS_LECTURA_REMOTA,
   CAMPOS_MEDIDOR_REMOTO,
@@ -26,6 +27,7 @@ const lectura: Lectura = {
   descripcionDano: null,
   fotoUri: 'file:///foto.jpg',
   fotoUrl: null,
+  ubicacion: { latitud: -0.1807, longitud: -78.4678, origen: 'gps' },
   confirmacionRevision: false,
   estadoVerificacion: 'verificada',
   estadoEnvio: 'pendiente',
@@ -44,6 +46,26 @@ describe('contrato exacto con MockAPI', () => {
     assert.equal(cuerpo.motivoInaccesible, undefined);
     assert.equal(cuerpo.consumoCalculado, undefined);
     assert.equal(cuerpo.estadoVerificacion, 'verificada');
+    assert.equal(cuerpo.latitud, -0.1807);
+    assert.equal(cuerpo.longitud, -78.4678);
+    assert.equal(cuerpo.origenUbicacion, 'gps');
+  });
+
+  it('recupera y valida la ubicación de una lectura remota', () => {
+    const remota = parsearLecturaRemota({
+      ...cuerpoLecturaRemota(lectura),
+      id: '10',
+    });
+    assert.deepEqual(remota.ubicacion, lectura.ubicacion);
+    assert.throws(
+      () =>
+        parsearLecturaRemota({
+          ...cuerpoLecturaRemota(lectura),
+          id: '11',
+          latitud: 91,
+        }),
+      /ubicación inválida/i,
+    );
   });
 
   it('envía a /medidores/:id solo los ocho campos de la ficha', () => {

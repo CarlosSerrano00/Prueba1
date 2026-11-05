@@ -5,6 +5,7 @@ import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 import {
   colors,
 } from '../../constants/ui';
+import { EstadoAnimado } from './EstadoAnimado';
 import { Texto } from './Texto';
 
 interface CardProps {
@@ -57,13 +58,19 @@ interface SectionTitleProps {
   titulo: string;
   descripcion?: string;
   accion?: ReactNode;
+  animacion?: 'ubicacion';
 }
 
-export function SectionTitle({ titulo, descripcion, accion }: SectionTitleProps) {
+export function SectionTitle({ titulo, descripcion, accion, animacion }: SectionTitleProps) {
   return (
     <View className="flex-row items-end justify-between gap-3">
       <View className="flex-1 gap-0.5">
-        <Texto variante="encabezado">{titulo}</Texto>
+        <View className="flex-row items-center justify-between gap-2">
+          <Texto variante="encabezado" className="flex-1">
+            {titulo}
+          </Texto>
+          {animacion ? <EstadoAnimado tipo={animacion} tamano={38} /> : null}
+        </View>
         {descripcion ? (
           <Texto variante="caption" color={colors.textMuted}>
             {descripcion}

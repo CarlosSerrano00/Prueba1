@@ -18,6 +18,7 @@ import {
 import { generarLocalId } from '../utils/id';
 import { obtenerPeriodo } from '../utils/periodo';
 import { primerError, validarRegistroCompleto } from '../utils/validators';
+import { esUbicacionLecturaValida } from '../utils/validacionesEntidades';
 import { calcularEstadoVerificacion, lecturaSePuedeCorregir } from '../utils/verificacion';
 import { LecturaDuplicadaError, ReglaNegocioError } from './errors';
 
@@ -67,6 +68,12 @@ export async function guardarNuevaLectura(
       validacion.errores,
     );
   }
+  if (!esUbicacionLecturaValida(datos.ubicacion)) {
+    throw new ReglaNegocioError(
+      'VALIDACION',
+      'Registra la ubicación de la lectura usando el GPS o seleccionando un punto en el mapa.',
+    );
+  }
 
   const diaRegistro = datos.fechaRegistro?.trim() || fechaLocalISO();
   const periodo =
@@ -111,6 +118,7 @@ export async function guardarNuevaLectura(
     descripcionDano: datos.tipoEstado === 'danado' ? limpiarTexto(datos.descripcionDano) : null,
     fotoUri,
     fotoUrl: null,
+    ubicacion: datos.ubicacion,
     confirmacionRevision: datos.confirmacionRevision,
     estadoVerificacion,
     estadoEnvio: 'pendiente',
@@ -168,6 +176,12 @@ export async function corregirLectura(
       validacion.errores,
     );
   }
+  if (!esUbicacionLecturaValida(datos.ubicacion)) {
+    throw new ReglaNegocioError(
+      'VALIDACION',
+      'Registra la ubicación de la lectura usando el GPS o seleccionando un punto en el mapa.',
+    );
+  }
 
   const ahora = new Date().toISOString();
   const estadoVerificacion = calcularEstadoVerificacion({
@@ -190,6 +204,7 @@ export async function corregirLectura(
       datos.tipoEstado === 'inaccesible' ? limpiarTexto(datos.motivoInaccesible) : null,
     descripcionDano: datos.tipoEstado === 'danado' ? limpiarTexto(datos.descripcionDano) : null,
     fotoUri,
+    ubicacion: datos.ubicacion,
     confirmacionRevision: datos.confirmacionRevision,
     estadoVerificacion,
     estadoEnvio: 'pendiente',

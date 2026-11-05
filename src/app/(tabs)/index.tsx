@@ -11,6 +11,7 @@ import {
   EmptyState,
   LecturaCard,
   SectionTitle,
+  SesionRequerida,
   StatCard,
   Texto,
 } from '@/components/ui';
@@ -63,7 +64,7 @@ export default function InicioScreen() {
     }
   }
 
-  if (!sesion) return null;
+  if (!sesion) return <SesionRequerida />;
 
   return (
     <AppScreen refrescando={refrescando} onRefresh={() => void refrescar()}>

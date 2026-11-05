@@ -11,7 +11,9 @@ import {
   Badge,
   Boton,
   Card,
+  EstadoAnimado,
   InfoRow,
+  MapaLectura,
   SectionTitle,
   Texto,
 } from '@/components/ui';
@@ -157,6 +159,18 @@ export default function LecturaScreen() {
         }
       />
 
+      <Card className="flex-row items-center gap-3">
+        <EstadoAnimado tipo="guardado" tamano={88} />
+        <View className="flex-1 gap-1">
+          <Texto variante="cuerpoFuerte">Lectura guardada</Texto>
+          <Texto variante="caption" color={colors.textMuted}>
+            {lectura.estadoEnvio === 'enviado'
+              ? 'La oficina confirmó el registro.'
+              : 'El registro está guardado en este teléfono y pendiente de sincronización.'}
+          </Texto>
+        </View>
+      </Card>
+
       <Card className="gap-3">
         <View className="flex-row items-center gap-3">
           <Ionicons
@@ -270,6 +284,27 @@ export default function LecturaScreen() {
             icono="shield-checkmark-outline"
           />
         </Card>
+      </View>
+
+      <View className="gap-3">
+        <SectionTitle
+          titulo="Ubicación de la lectura"
+          descripcion="Lugar donde el técnico registró la lectura."
+          animacion="ubicacion"
+        />
+        {lectura.ubicacion ? (
+          <>
+            <MapaLectura ubicacion={lectura.ubicacion} />
+            <Texto variante="micro" color={colors.textMuted}>
+              {lectura.ubicacion.latitud.toFixed(6)}, {lectura.ubicacion.longitud.toFixed(6)} ·{' '}
+              {lectura.ubicacion.origen === 'gps' ? 'GPS' : 'marcador manual'}
+            </Texto>
+          </>
+        ) : (
+          <Alerta tono="info" titulo="Ubicación no disponible">
+            Esta lectura se creó antes de guardar coordenadas.
+          </Alerta>
+        )}
       </View>
 
       <Alerta

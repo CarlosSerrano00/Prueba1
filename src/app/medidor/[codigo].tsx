@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { useCallback, useRef, useState } from 'react';
+import { View } from 'react-native';
 
 import {
   Alerta,
@@ -10,7 +10,9 @@ import {
   Badge,
   Boton,
   Card,
+  EstadoAnimado,
   InfoRow,
+  MapaLectura,
   SectionTitle,
   Texto,
 } from '@/components/ui';
@@ -46,8 +48,10 @@ export default function MedidorScreen() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refrescando, setRefrescando] = useState(false);
+  const cargaInicialRef = useRef(true);
 
   const cargar = useCallback(async (forzarRed = false) => {
+    const inicioCarga = Date.now();
     const validacion = validarCodigoMedidor(codigo);
     if (!validacion.valido) {
       setError(validacion.mensaje ?? 'El código del medidor no es válido.');
@@ -56,15 +60,26 @@ export default function MedidorScreen() {
     }
 
     setError(null);
+    let datosConsultados: MedidorConOrigen | null = null;
+    let lecturaExistente: Lectura | null = null;
     try {
-      const datos = await consultarMedidor(codigo, enLinea, forzarRed);
+      datosConsultados = await consultarMedidor(codigo, enLinea, forzarRed);
       const periodo = obtenerPeriodo();
-      const existente = await obtenerLecturaDelPeriodo(codigo, periodo);
-      setResultado(datos);
-      setLecturaMes(existente);
+      lecturaExistente = await obtenerLecturaDelPeriodo(codigo, periodo);
     } catch (fallo) {
       setError(mensajeDeError(fallo));
     } finally {
+      if (cargaInicialRef.current) {
+        const esperaRestante = Math.max(0, 700 - (Date.now() - inicioCarga));
+        if (esperaRestante > 0) {
+          await new Promise((resolver) => setTimeout(resolver, esperaRestante));
+        }
+        cargaInicialRef.current = false;
+      }
+      if (datosConsultados) {
+        setResultado(datosConsultados);
+        setLecturaMes(lecturaExistente);
+      }
       setCargando(false);
       setRefrescando(false);
     }
@@ -91,7 +106,7 @@ export default function MedidorScreen() {
       <AppScreen>
         <AppHeader titulo="Medidor" subtitulo={codigo} onBack={() => router.back()} />
         <View className="flex-1 items-center justify-center gap-3 py-12">
-          <ActivityIndicator size="large" color={colors.accent} />
+          <EstadoAnimado tipo="cargando" tamano={120} />
           <Texto variante="caption" color={colors.textMuted}>
             Consultando el medidor…
           </Texto>
@@ -199,6 +214,24 @@ export default function MedidorScreen() {
           Un medidor solo admite una lectura por mes. No se habilitará un segundo registro para
           este periodo.
         </Alerta>
+      ) : null}
+
+      {lecturaMes ? (
+        <View className="gap-3">
+          <SectionTitle
+            titulo="Ubicación de la lectura"
+            descripcion={`Punto donde se registró la lectura de ${nombrePeriodo(periodo)}.`}
+            animacion="ubicacion"
+          />
+          {lecturaMes.ubicacion ? (
+            <MapaLectura ubicacion={lecturaMes.ubicacion} />
+          ) : (
+            <Alerta tono="info" titulo="Ubicación no disponible">
+              Esta lectura anterior no guardó coordenadas. Las nuevas lecturas registran su
+              ubicación por GPS o con un marcador en el mapa.
+            </Alerta>
+          )}
+        </View>
       ) : null}
 
       <View className="gap-3">

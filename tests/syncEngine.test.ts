@@ -45,6 +45,7 @@ function crearLectura(parcial: Partial<Lectura> = {}): Lectura {
     descripcionDano: null,
     fotoUri: null,
     fotoUrl: null,
+    ubicacion: { latitud: -0.1807, longitud: -78.4678, origen: 'gps' },
     confirmacionRevision: false,
     estadoVerificacion: 'verificada',
     estadoEnvio: 'pendiente',
@@ -149,6 +150,7 @@ function crearEscenario(opciones: OpcionesEscenario = {}) {
         tipoEstado: lecturaEnviar.tipoEstado,
         lecturaActual: lecturaEnviar.lecturaActual,
         estadoVerificacion: lecturaEnviar.estadoVerificacion,
+        ubicacion: lecturaEnviar.ubicacion,
       };
       remotas.push(remota);
       if (opciones.fallarPostDespues) {

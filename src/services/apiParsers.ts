@@ -1,4 +1,9 @@
-import type { LecturaRemota, MedidorRemoto, TipoEstadoLectura } from '../types/models';
+import type {
+  LecturaRemota,
+  MedidorRemoto,
+  TipoEstadoLectura,
+  UbicacionLectura,
+} from '../types/models';
 import { ESTADOS_VERIFICACION, TIPOS_ESTADO } from '../types/models';
 import {
   hoyISO,
@@ -20,6 +25,7 @@ import {
   type OpcionesNumero,
 } from '../utils/validacionesEntidades';
 import { esCodigoMedidorValido } from '../utils/validators';
+import { esUbicacionLecturaValida } from '../utils/validacionesEntidades';
 import { ApiError } from './errors';
 
 type Crudo = Record<string, unknown>;
@@ -111,6 +117,18 @@ function estadoVerificacionValido(objeto: Crudo, contexto: string): string | nul
     'respuesta',
     `La respuesta de ${contexto} tiene un estadoVerificacion desconocido.`,
   );
+}
+
+function ubicacionOpcional(objeto: Crudo, contexto: string): UbicacionLectura | null {
+  const latitud = numeroOpcional(objeto, 'latitud', contexto);
+  const longitud = numeroOpcional(objeto, 'longitud', contexto);
+  if (latitud == null && longitud == null) return null;
+  const origen = textoOpcional(objeto, 'origenUbicacion');
+  const ubicacion = { latitud, longitud, origen };
+  if (!esUbicacionLecturaValida(ubicacion)) {
+    throw new ApiError('respuesta', `La respuesta de ${contexto} tiene una ubicación inválida.`);
+  }
+  return ubicacion;
 }
 
 function fechaDiaOpcional(
@@ -260,6 +278,7 @@ export function parsearLecturaRemota(valor: unknown): LecturaRemota {
     tipoEstado,
     lecturaActual,
     estadoVerificacion: estadoVerificacionValido(objeto, contexto),
+    ubicacion: ubicacionOpcional(objeto, contexto),
   };
 }
 

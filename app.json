@@ -44,6 +44,12 @@
       ],
       "expo-sqlite",
       [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "AquaRuta registra la ubicación donde el técnico realiza cada lectura del medidor."
+        }
+      ],
+      [
         "expo-image-picker",
         {
           "cameraPermission": "AquaRuta usa la cámara para fotografiar el medidor como respaldo de la lectura.",

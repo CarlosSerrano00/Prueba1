@@ -131,6 +131,21 @@ function validarLectura(lectura) {
   if (lectura.tipoEstado === 'inaccesible' && lectura.lecturaActual != null) {
     errores.push('Una lectura inaccesible no debe tener lecturaActual.');
   }
+  const tieneLatitud = lectura.latitud != null;
+  const tieneLongitud = lectura.longitud != null;
+  if (
+    tieneLatitud !== tieneLongitud ||
+    (tieneLatitud &&
+      (typeof lectura.latitud !== 'number' ||
+        lectura.latitud < -90 ||
+        lectura.latitud > 90 ||
+        typeof lectura.longitud !== 'number' ||
+        lectura.longitud < -180 ||
+        lectura.longitud > 180 ||
+        !['gps', 'manual'].includes(lectura.origenUbicacion)))
+  ) {
+    errores.push('La ubicación requiere latitud, longitud y origen GPS o manual válidos.');
+  }
   return errores;
 }
 

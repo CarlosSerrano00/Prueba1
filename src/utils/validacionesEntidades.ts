@@ -1,5 +1,6 @@
 import { formatearNumero } from './format';
 import { hoyISO, normalizarFechaDia, validarFechaDia } from './fechas';
+import type { UbicacionLectura } from '../types/models';
 
 export const ESTADOS_MEDIDOR = ['activo', 'suspendido', 'inactivo'] as const;
 export type EstadoMedidor = (typeof ESTADOS_MEDIDOR)[number];
@@ -22,6 +23,22 @@ export const RANGO_PROMEDIO = {
   max: 100000,
   decimales: 3,
 } as const;
+
+export function esUbicacionLecturaValida(valor: unknown): valor is UbicacionLectura {
+  if (!valor || typeof valor !== 'object') return false;
+  const ubicacion = valor as Record<string, unknown>;
+  return (
+    typeof ubicacion.latitud === 'number' &&
+    Number.isFinite(ubicacion.latitud) &&
+    ubicacion.latitud >= -90 &&
+    ubicacion.latitud <= 90 &&
+    typeof ubicacion.longitud === 'number' &&
+    Number.isFinite(ubicacion.longitud) &&
+    ubicacion.longitud >= -180 &&
+    ubicacion.longitud <= 180 &&
+    (ubicacion.origen === 'gps' || ubicacion.origen === 'manual')
+  );
+}
 
 export interface MedidorFormulario {
   codigo: string;

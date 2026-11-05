@@ -39,6 +39,7 @@ export function AppScreen({
   const contenido = scroll ? (
     <ScrollView
       className="flex-1"
+      style={{ flex: 1 }}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
       refreshControl={
@@ -60,13 +61,20 @@ export function AppScreen({
       </View>
     </ScrollView>
   ) : (
-    <View className="mx-auto w-full max-w-[760px] flex-1 px-4 pb-[110px] pt-3" style={contentContainerStyle}>
+    <View
+      className="mx-auto w-full max-w-[760px] flex-1 px-4 pb-[110px] pt-3"
+      style={[{ flex: 1 }, contentContainerStyle]}
+    >
       {children}
     </View>
   );
 
   return (
-    <SafeAreaView edges={edges} className="flex-1 overflow-hidden bg-aqua-background" style={style}>
+    <SafeAreaView
+      edges={edges}
+      className="flex-1 overflow-hidden bg-aqua-background"
+      style={[{ flex: 1 }, style]}
+    >
       <View pointerEvents="none" className="absolute inset-0">
         <View className="absolute -right-[100px] -top-[90px] h-[250px] w-[250px] rounded-full bg-[#D9D7FF] opacity-65" />
         <View className="absolute left-[-95px] top-[340px] h-[190px] w-[190px] rounded-full bg-[#C9F5EA] opacity-65" />
@@ -76,6 +84,7 @@ export function AppScreen({
       {evitarTeclado ? (
         <KeyboardAvoidingView
           className="flex-1"
+          style={{ flex: 1 }}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
           {contenido}
